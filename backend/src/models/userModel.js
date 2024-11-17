@@ -22,15 +22,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 6,
-      validate: {
-        validator: function (value) {
-          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-            value
-          );
-        },
-        message:
-          "Password must contain at least 8 characters, including uppercase letters, lowercase letters, numbers, and special characters",
-      },
     },
     isAdmin: {
       type: Boolean,
@@ -40,21 +31,16 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: Number,
       required: true,
-      validate: {
-        validator: function (value) {
-          return /^\d{10}$/.test(value);
-        },
-        message: "Invalid phone number format",
-      },
+      
     },
-    access_token: {
-      type: String,
-      required: true,
-    },
-    refresh_token: {
-      type: String,
-      required: true,
-    },
+    // access_token: {
+    //   type: String,
+    //   required: true,
+    // },
+    // refresh_token: {
+    //   type: String,
+    //   required: true,
+    // },
     created_at: {
       type: Date,
       default: Date.now,
