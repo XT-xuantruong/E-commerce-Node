@@ -11,7 +11,7 @@
                         <RouterLink :to="{
                             name: 'category',
                             params: { categorySlug: category.slug },
-                        }" class="text-black w-full block flex items-center">
+                        }" class="text-black w-full block  items-center">
                             <img :src="category.image" alt="" class="w-6 h-6 mr-2" />
                             <span>{{ category.name }} ({{ getTotalItems(category.id) }})</span>
                         </RouterLink>

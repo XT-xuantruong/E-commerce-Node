@@ -31,7 +31,6 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: Number,
       required: true,
-      
     },
     // access_token: {
     //   type: String,
@@ -41,10 +40,6 @@ const userSchema = new mongoose.Schema(
     //   type: String,
     //   required: true,
     // },
-    created_at: {
-      type: Date,
-      default: Date.now,
-    },
   },
   { timestamps: true }
 );

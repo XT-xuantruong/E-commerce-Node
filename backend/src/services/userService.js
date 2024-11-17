@@ -1,12 +1,12 @@
 const User = require("../models/userModel");
 
 var crypto = require("crypto");
-var bcrypt = require("bcrypt");
+
 const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
-    const { name, email, password, confirmPassword, phone } = newUser;
+    const { name, email, password, phone } = newUser;
 
     try {
       const checkUser = await User.findOne({ email: email });
@@ -43,10 +43,11 @@ const createUser = (newUser) => {
 
 const loginUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
-    const { name, email, password, confirmPassword, phone } = newUser;
+    const { email, password } = newUser;
 
     try {
       const checkUser = await User.findOne({ email: email });
+
       if (checkUser === null) {
         resolve({
           status: "ok",
@@ -68,7 +69,7 @@ const loginUser = (newUser) => {
         id: checkUser.id,
         isAdmin: checkUser.isAdmin,
       });
-
+      console.log(checkUser);
       const refresh_token = await genneralRefreshToken({
         id: checkUser.id,
         isAdmin: checkUser.isAdmin,
@@ -132,7 +133,7 @@ const deleteUser = (id) => {
       resolve({
         status: "ok",
         messsage: "delete Successfully",
-        data: updateUser,
+        data: deleteUser,
       });
     } catch (e) {
       reject(e);
@@ -140,7 +141,7 @@ const deleteUser = (id) => {
   });
 };
 
-const getAllUser = (id) => {
+const getAllUser = () => {
   return new Promise(async (resolve, reject) => {
     try {
       const all = await User.find();

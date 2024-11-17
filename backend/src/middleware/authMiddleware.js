@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
-const User = require("../models/userModel");
-dotenv.config();
+const path = require("path");
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.token.split(" ")[1];
+  const token = req.headers.authorization.split(" ")[1];
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
     if (err) {
       return res.status(401).json({
@@ -44,7 +45,6 @@ const authUserMiddleware = (req, res, next) => {
     }
   });
 };
-
 
 module.exports = {
   authMiddleware,
