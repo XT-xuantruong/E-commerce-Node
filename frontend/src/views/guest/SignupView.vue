@@ -4,11 +4,16 @@ import { useRouter } from "vue-router";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import DefaultLayout from "@/layouts/user/DefaultLayout.vue";
+import oauthServices from "@/services/oauthServices";
 import { RouterLink } from "vue-router";
+import Toast from "@/components/Toast.vue";
+import { useToastStore } from "@/stores/toast";
+
 
 const router = useRouter();
 const showPassword = ref(false);
 const formError = ref("");
+const toastStore = useToastStore();
 
 // Define validation schema using yup
 const schema = yup.object({
@@ -68,15 +73,39 @@ const handleFacebookSignup = async () => {
     }
 };
 
-// Form submission handler
 const onSubmit = async (values) => {
-    try {
-        console.log("Signing up with:", values);
-        router.push("/login");
-    } catch (error) {
-        formError.value = "Registration failed. Please try again.";
-        console.error("Signup error:", error);
-    }
+  try {
+    console.log("Signing up with:", values);
+
+    oauthServices
+      .signup(values)
+      .then((response) => {
+        if (response.status === 200) {
+          toastStore.showToast(
+            5000,
+            "The user is registered. Please activate your account by clicking your email link.",
+            "bg-emerald-500"
+          );
+        } else {
+          const data = JSON.parse(response.data.message);
+          for (const key in data) {
+            errors.value.push(data[key][0].message);
+          }
+
+          toastStore.showToast(
+            5000,
+            "Something went wrong. Please try again",
+            "bg-red-300"
+          );
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  } catch (error) {
+    formError.value = "Registration failed. Please try again.";
+    console.error("Signup error:", error);
+  }
 };
 </script>
 
@@ -84,26 +113,6 @@ const onSubmit = async (values) => {
     <DefaultLayout>
         <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-auto my-10 border">
             <h2 class="text-2xl font-bold mb-6 text-center">Sign Up</h2>
-
-            <!-- Social Signup Buttons -->
-            <div class="space-y-3 mb-6">
-                <button @click="handleGoogleSignup"
-                    class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 p-2 rounded-lg hover:bg-gray-50 transition duration-200">
-                    <font-awesome-icon :icon="['fab', 'google']" class="h-5 w-5 text-red-500" />
-                    <span>Continue with Google</span>
-                </button>
-
-                <button @click="handleFacebookSignup"
-                    class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-200">
-                    <font-awesome-icon :icon="['fab', 'facebook']" class="h-5 w-5" />
-                    <span>Continue with Facebook</span>
-                </button>
-            </div>
-
-            <div class="relative flex items-center justify-center mb-6">
-                <hr class="w-full border-gray-300" />
-                <span class="absolute bg-white px-4 text-gray-500">or</span>
-            </div>
 
             <!-- Form Error Alert -->
             <div v-if="formError" class="mb-4 p-3 bg-red-100 text-red-700 rounded">
@@ -119,7 +128,6 @@ const onSubmit = async (values) => {
                         placeholder="Enter your full name" />
                     <ErrorMessage name="name" class="text-red-500 text-sm mt-1" />
                 </div>
-
                 <!-- Email -->
                 <div class="mb-4">
                     <label for="email" class="block text-gray-700 font-bold mb-2">Email</label>
@@ -128,7 +136,14 @@ const onSubmit = async (values) => {
                         placeholder="Enter your email" />
                     <ErrorMessage name="email" class="text-red-500 text-sm mt-1" />
                 </div>
-
+                <!-- phone -->
+                <div class="mb-4">
+                    <label for="phone" class="block text-gray-700 font-bold mb-2">Phone</label>
+                    <Field name="phone" type="name" id="phone"
+                        class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your phone" />
+                    <ErrorMessage name="email" class="text-red-500 text-sm mt-1" />
+                </div>
                 <!-- Password -->
                 <div class="mb-4">
                     <label for="password" class="block text-gray-700 font-bold mb-2">Password</label>
@@ -234,6 +249,7 @@ const onSubmit = async (values) => {
                     Sign Up
                 </button>
             </Form>
+            <Toast />
 
             <!-- Login Link -->
             <p class="text-center text-gray-600 mt-4">

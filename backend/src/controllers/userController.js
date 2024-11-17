@@ -56,7 +56,7 @@ const loginUser = async (req, res) => {
       userData = req.body;
     }
 
-    const { email, password } = userData;
+    const {  email, password} = userData;
 
     const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
     const isCheckEmail = reg.test(email);
@@ -66,14 +66,14 @@ const loginUser = async (req, res) => {
         status: "ERR",
         message: "The input is required",
       });
-    }
+    } 
     if (!isCheckEmail) {
       return res.status(200).json({
         status: "ERR",
         message: "The input is email",
       });
-    }
-
+    } 
+     
     const response = await userService.loginUser(req.body);
     return res.status(200).json(response);
   } catch (e) {

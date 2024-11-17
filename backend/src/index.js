@@ -2,13 +2,15 @@ const dotenv = require("dotenv");
 const path = require("path");
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
+
 const express = require("express");
 const mongoose = require("mongoose");
 const routes = require("./routers");
 const bodyParser = require("body-parser");
 
 const app = express();
-
+const cors = require('cors');
+app.use(cors());
 const port = process.env.PORT;
 const hostname = process.env.HOSTNAME;
 const mongoUrl = process.env.MONGODB_URL;

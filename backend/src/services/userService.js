@@ -1,13 +1,13 @@
 const User = require("../models/userModel");
 
 var crypto = require("crypto");
-
+var bcrypt = require("bcrypt");
 const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
     const { name, email, password, phone } = newUser;
-
+  
     try {
       const checkUser = await User.findOne({ email: email });
       if (checkUser !== null) {
@@ -43,11 +43,10 @@ const createUser = (newUser) => {
 
 const loginUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
-    const { email, password } = newUser;
+    const { name, email, password, confirmPassword, phone } = newUser;
 
     try {
       const checkUser = await User.findOne({ email: email });
-
       if (checkUser === null) {
         resolve({
           status: "ok",
@@ -69,19 +68,20 @@ const loginUser = (newUser) => {
         id: checkUser.id,
         isAdmin: checkUser.isAdmin,
       });
-      console.log(checkUser);
+
       const refresh_token = await genneralRefreshToken({
         id: checkUser.id,
         isAdmin: checkUser.isAdmin,
       });
 
-      console.log(access_token);
+      console.log(checkUser);
 
       resolve({
         status: "ok",
         messsage: "Successfully",
         access_token: access_token,
         refresh_token: refresh_token,
+        user: checkUser
         // data: createUser,
       });
     } catch (e) {
@@ -133,7 +133,7 @@ const deleteUser = (id) => {
       resolve({
         status: "ok",
         messsage: "delete Successfully",
-        data: deleteUser,
+        data: updateUser,
       });
     } catch (e) {
       reject(e);
@@ -141,7 +141,7 @@ const deleteUser = (id) => {
   });
 };
 
-const getAllUser = () => {
+const getAllUser = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
       const all = await User.find();
@@ -183,19 +183,9 @@ const getDetailUser = (id) => {
 const refreshToken = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const user = await User.findOne({ _id: id });
-
-      if (user === null) {
-        resolve({
-          status: "ok",
-          messsage: "The user is not existing",
-        });
-      }
-
       resolve({
         status: "ok",
-        messsage: "detail Successfully",
-        data: user,
+        messsage: "Successfully",
       });
     } catch (e) {
       reject(e);
