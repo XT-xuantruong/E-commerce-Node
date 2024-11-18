@@ -27,9 +27,9 @@ export const useUserStore = defineStore("user", {
         this.user.name = localStorage.getItem("user.name");
         this.user.email = localStorage.getItem("user.email");
         this.user.avatar = localStorage.getItem("user.avatar");
-        this.user.isAuthenticated = true;
+        // this.user.isAuthenticated = true;
 
-        this.refreshToken();
+        // this.refreshToken();
 
         console.log("Initialized user:", this.user);
       }
@@ -44,6 +44,7 @@ export const useUserStore = defineStore("user", {
 
       localStorage.setItem("user.access", data.access_token);
       localStorage.setItem("user.refresh", data.refresh_token);
+      localStorage.setItem("user.isAuthenticated", true);
 
       console.log("user.access: ", localStorage.getItem("user.access"));
     },
@@ -59,6 +60,7 @@ export const useUserStore = defineStore("user", {
       this.user.email = null;
       this.user.avatar = null;
 
+      localStorage.setItem("user.isAuthenticated", false);
       localStorage.setItem("user.access", "");
       localStorage.setItem("user.refresh", "");
       localStorage.setItem("user.id", "");
@@ -68,14 +70,14 @@ export const useUserStore = defineStore("user", {
     },
 
     setUserInfo(user) {
-      console.log("setUserInfo", user);
+      console.log("setUserInfo", user._id);
 
       this.user.id = user._id;
       this.user.name = user.name;
       this.user.email = user.email;
       // this.user.avatar = user.avatar;
 
-      localStorage.setItem("user.id", this.user._id);
+      localStorage.setItem("user.id", this.user.id);
       localStorage.setItem("user.name", this.user.name);
       localStorage.setItem("user.email", this.user.email);
       // localStorage.setItem("user.avatar", this.user.avatar);

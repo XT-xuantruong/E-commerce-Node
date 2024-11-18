@@ -56,7 +56,7 @@ const loginUser = async (req, res) => {
       userData = req.body;
     }
 
-    const {  email, password} = userData;
+    const { email, password } = userData;
 
     const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
     const isCheckEmail = reg.test(email);
@@ -66,14 +66,14 @@ const loginUser = async (req, res) => {
         status: "ERR",
         message: "The input is required",
       });
-    } 
+    }
     if (!isCheckEmail) {
       return res.status(200).json({
         status: "ERR",
         message: "The input is email",
       });
-    } 
-     
+    }
+
     const response = await userService.loginUser(req.body);
     return res.status(200).json(response);
   } catch (e) {
@@ -162,6 +162,18 @@ const refreshToken = async (req, res) => {
   }
 };
 
+const logoutUser = async (req, res) => {
+  try {
+    const { access_token, refresh_token } = req.body;
+    const response = await userService.logoutUser(access_token, refresh_token);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -170,4 +182,5 @@ module.exports = {
   getAllUser,
   getDetailUser,
   refreshToken,
+  logoutUser,
 };

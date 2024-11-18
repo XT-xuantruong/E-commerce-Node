@@ -76,11 +76,12 @@ class OauthServices extends ApiService {
   async logout() {
     const state = useUserStore();
     const data = {
-      refresh: state.user.refresh,
+      access_token: state.user.access,
+      refresh_token: state.user.refresh,
     };
     const option = {
       method: "post",
-      url: `/${this.entity}/blacklist/`,
+      url: `/${this.entity}/logout/`,
       data: data,
     };
     return this.request(option);
@@ -124,16 +125,19 @@ class OauthServices extends ApiService {
     });
   }
 
-  async updateProfile(data) {
+  async updateProfile(id, data) {
+
+    var data = {
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+    };
     console.log("data update", data);
 
     return this.request({
-      method: "post",
-      url: `/${this.entity}/editprofile/`,
+      method: "put",
+      url: `/${this.entity}/update-user/${id}/`,
       data: data,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
     });
   }
 

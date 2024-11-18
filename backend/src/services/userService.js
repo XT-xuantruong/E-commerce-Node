@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const blacklistService = require('./blacklistService');
 
 var crypto = require("crypto");
 var bcrypt = require("bcrypt");
@@ -180,16 +181,19 @@ const getDetailUser = (id) => {
   });
 };
 
-const refreshToken = (id) => {
+const logoutUser = (access_token, refresh_token) => {
   return new Promise(async (resolve, reject) => {
-    try {
-      resolve({
-        status: "ok",
-        messsage: "Successfully",
-      });
-    } catch (e) {
-      reject(e);
-    }
+      try {
+          await blacklistService.addToBlacklist(access_token);
+          await blacklistService.addToBlacklist(refresh_token);
+
+          resolve({
+              status: "ok",
+              message: "Logout Successfully",
+          });
+      } catch (e) {
+          reject(e);
+      }
   });
 };
 
@@ -200,5 +204,5 @@ module.exports = {
   deleteUser,
   getAllUser,
   getDetailUser,
-  refreshToken,
+  logoutUser
 };

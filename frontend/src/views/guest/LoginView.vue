@@ -98,7 +98,7 @@ const handleSubmit = async (event) => {
       loginResponse.data.access,
       loginResponse.data.user._id
     );
-    console.log(userResponse.data.data);
+    console.log(loginResponse.data.user._id);
 
     userStore.setUserInfo(userResponse.data.data);
 

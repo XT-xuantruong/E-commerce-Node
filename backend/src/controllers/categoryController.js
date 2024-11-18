@@ -5,6 +5,7 @@ const createCategory = async (req, res) => {
   try {
     let categoryData;
     const contentType = req.headers["content-type"];
+    console.log(req.body);
 
     if (contentType.includes("application/json")) {
       categoryData = req.body;
