@@ -68,14 +68,13 @@ const handleSubmit = async (event) => {
       email: email.value,
       password: password.value,
     });
-
     userStore.setToken(loginResponse.data);
 
     const userResponse = await oauthServices.getme(
-      loginResponse.data.access,
+      loginResponse.data.access_token,
       loginResponse.data.user._id
     );
-    console.log(loginResponse.data.user._id);
+    console.log(userResponse.data);
 
     userStore.setUserInfo(userResponse.data.data);
 
@@ -89,12 +88,10 @@ const handleSubmit = async (event) => {
 
 <template>
   <DefaultLayout>
-    <div
-      class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-auto my-10 border"
-    >
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-auto my-10 border">
       <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
 
-    
+
 
       <div class="relative flex items-center justify-center mb-6">
         <hr class="w-full border-gray-300" />
@@ -109,18 +106,10 @@ const handleSubmit = async (event) => {
 
         <!-- Email -->
         <div class="mb-4">
-          <label for="email" class="block text-gray-700 font-bold mb-2"
-            >Email</label
-          >
-          <input
-            type="email"
-            id="email"
-            v-model="email"
-            @blur="validateEmail"
+          <label for="email" class="block text-gray-700 font-bold mb-2">Email</label>
+          <input type="email" id="email" v-model="email" @blur="validateEmail"
             class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your email"
-            required
-          />
+            placeholder="Enter your email" required />
           <p v-if="emailError" class="text-red-500 text-sm mt-1">
             {{ emailError }}
           </p>
@@ -129,35 +118,18 @@ const handleSubmit = async (event) => {
         <!-- Password -->
         <div class="mb-6">
           <div class="flex justify-between items-center mb-2">
-            <label for="password" class="text-gray-700 font-bold"
-              >Password</label
-            >
-            <RouterLink
-              to="/forgot-password"
-              class="text-sm text-blue-500 hover:underline"
-            >
+            <label for="password" class="text-gray-700 font-bold">Password</label>
+            <RouterLink to="/forgot-password" class="text-sm text-blue-500 hover:underline">
               Forgot Password?
             </RouterLink>
           </div>
           <div class="relative">
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              id="password"
-              v-model="password"
-              @blur="validatePassword"
+            <input :type="showPassword ? 'text' : 'password'" id="password" v-model="password" @blur="validatePassword"
               class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
-              required
-            />
-            <button
-              type="button"
-              @click="togglePasswordVisibility"
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              <font-awesome-icon
-                :icon="['far', showPassword ? 'eye-slash' : 'eye']"
-                class="h-5 w-5"
-              />
+              placeholder="Enter your password" required />
+            <button type="button" @click="togglePasswordVisibility"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none">
+              <font-awesome-icon :icon="['far', showPassword ? 'eye-slash' : 'eye']" class="h-5 w-5" />
             </button>
           </div>
           <p v-if="passwordError" class="text-red-500 text-sm mt-1">
@@ -166,10 +138,8 @@ const handleSubmit = async (event) => {
         </div>
 
         <!-- Login Button -->
-        <button
-          type="submit"
-          class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 font-bold transition duration-200"
-        >
+        <button type="submit"
+          class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 font-bold transition duration-200">
           Login
         </button>
       </form>
@@ -177,10 +147,7 @@ const handleSubmit = async (event) => {
       <!-- Signup Link -->
       <p class="text-center text-gray-600 mt-4">
         Don't have an account?
-        <RouterLink
-          to="/register"
-          class="text-blue-500 font-bold hover:underline"
-        >
+        <RouterLink to="/register" class="text-blue-500 font-bold hover:underline">
           Sign up here
         </RouterLink>
       </p>

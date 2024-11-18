@@ -1,6 +1,5 @@
 import axios from "axios";
-import { useUserStore } from '@/stores/user'
-
+import { useUserStore } from "@/stores/user";
 
 const APP_API_URL = "http://localhost:8088/api/";
 // const Cookie = require("js-cookie");
@@ -16,7 +15,7 @@ export default class Http {
 
   requestHandler(request) {
     const state = useUserStore();
-    const { access  } = state.user;
+    const { access } = state.user;
     if (access && access.length !== 0) {
       request.headers["Authorization"] = `Bearer ${access}`;
     }
@@ -32,7 +31,7 @@ export default class Http {
 
   successHandler(response) {
     if (this.handlerEnabled) {
-      return response; 
+      return response;
     }
     return response;
   }

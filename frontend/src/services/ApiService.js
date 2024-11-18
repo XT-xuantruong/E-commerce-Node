@@ -18,6 +18,7 @@ export default class ApiService {
       url: data.url,
       data: data.data,
       params: data.params,
+      headers: data.headers,
     };
     return http(option)
       .then((response) => {
