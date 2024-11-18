@@ -48,30 +48,7 @@ const validatePassword = () => {
   return true;
 };
 
-// Social login handlers
-const handleGoogleLogin = async () => {
-  try {
-    // Implement Google login logic
-    console.log("Logging in with Google");
-    // After successful login:
-    // router.push("/");
-  } catch (error) {
-    formError.value = "Google login failed. Please try again.";
-    console.error("Google login error:", error);
-  }
-};
 
-const handleFacebookLogin = async () => {
-  try {
-    // Implement Facebook login logic
-    console.log("Logging in with Facebook");
-    // After successful login:
-    // router.push("/");
-  } catch (error) {
-    formError.value = "Facebook login failed. Please try again.";
-    console.error("Facebook login error:", error);
-  }
-};
 
 // Form submission handler
 const handleSubmit = async (event) => {
@@ -117,27 +94,7 @@ const handleSubmit = async (event) => {
     >
       <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
 
-      <!-- Social Login Buttons -->
-      <div class="space-y-3 mb-6">
-        <button
-          @click="handleGoogleLogin"
-          class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 p-2 rounded-lg hover:bg-gray-50 transition duration-200"
-        >
-          <font-awesome-icon
-            :icon="['fab', 'google']"
-            class="h-5 w-5 text-red-500"
-          />
-          <span>Continue with Google</span>
-        </button>
-
-        <button
-          @click="handleFacebookLogin"
-          class="w-full flex items-center justify-center gap-2 bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-200"
-        >
-          <font-awesome-icon :icon="['fab', 'facebook']" class="h-5 w-5" />
-          <span>Continue with Facebook</span>
-        </button>
-      </div>
+    
 
       <div class="relative flex items-center justify-center mb-6">
         <hr class="w-full border-gray-300" />

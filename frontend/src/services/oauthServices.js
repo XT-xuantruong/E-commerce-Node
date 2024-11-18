@@ -86,6 +86,8 @@ class OauthServices extends ApiService {
   }
 
   async getme(access, id) {
+    console.log(access);
+    
     const option = {
       method: "get",
       url: `/${this.entity}/detail-user/${id}/`,

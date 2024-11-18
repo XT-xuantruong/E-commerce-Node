@@ -39,12 +39,6 @@ export const adminRoutes = [
             component: SigninView,
             meta: { title: "Signin" },
           },
-          {
-            path: "signup",
-            name: "signup",
-            component: SignupView,
-            meta: { title: "Signup" },
-          },
         ],
       },
       {

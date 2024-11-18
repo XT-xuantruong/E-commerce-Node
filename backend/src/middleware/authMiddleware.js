@@ -4,7 +4,7 @@ const path = require("path");
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+  const token = req.headers.Authorization.split(" ")[1];
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
     if (err) {
       return res.status(401).json({
@@ -25,7 +25,9 @@ const authMiddleware = (req, res, next) => {
 };
 
 const authUserMiddleware = (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
+  console.log(req.headers.Authorization);
+  
+  const token = req.headers.Authorization.split(" ")[1];
   const userId = req.params.id;
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
     if (err) {
@@ -35,6 +37,7 @@ const authUserMiddleware = (req, res, next) => {
       });
     }
     const { payload } = user;
+    
     if (payload?.isAdmin || payload?.id == userId) {
       next();
     } else {
