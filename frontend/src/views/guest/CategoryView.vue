@@ -1,149 +1,209 @@
 <template>
     <SidebarLayout>
+        <!-- Header Controls -->
         <div class="flex justify-end items-center mb-4 space-x-4">
-            <button @click="openFilterModal = true" class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+            <!-- Filter Button -->
+            <button @click="openFilterModal = true"
+                class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition-colors"
+                aria-label="Open filter options">
                 <font-awesome-icon icon="filter" />
             </button>
 
-            <!-- Dropdown Sort -->
-            <div>
-                <select v-model="sortOrder" @change="sortProducts" class="px-4 py-2 rounded-lg bg-slate-100">
-                    <option value="" disabled selected>Sort</option>
+            <!-- Sort Dropdown -->
+            <div class="relative">
+                <select v-model="sortOrder" @change="handleSort"
+                    class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">
+                    <option value="" disabled>Sort</option>
                     <option value="asc">Giá thấp đến cao</option>
                     <option value="desc">Giá cao đến thấp</option>
                 </select>
             </div>
         </div>
-        <ProductList :sort="sortOrder" :filterOptions="filterOptions" title="Fruits & Vegetables"
-            :products="paginatedItems" />
-        <Pagination :totalItems="totalItems" :itemsPerPage="itemsPerPage" @page-changed="handlePageChange"
-            :currentPage="currentPage" />
+
+        <!-- Product List -->
+        <ProductList :products="productsByCategory" :loading="loading" :sort="sortOrder" :filterOptions="filterOptions"
+            :title="category?.title || 'Products'" />
+
+        <!-- Pagination -->
+        <Pagination :total-page="totalPages" :current-page="currentPage" :max-visible-pages="5"
+            @page-changed="handlePageChange" />
+
         <!-- Filter Modal -->
-        <div v-if="openFilterModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-end"
-            @click.self="closeModal">
-            <div class="bg-white w-80 h-full p-6 shadow-lg transform translate-x-0 transition-transform">
-                <h2 class="text-xl font-semibold mb-4">Filter Options</h2>
-
-                <!-- Price Range Filter -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium">Price Range</label>
-                    <div class="flex space-x-2">
-                        <input type="number" v-model="minPrice" placeholder="Min" class="w-1/2 p-2 border rounded"
-                            min="0" />
-                        <input type="number" v-model="maxPrice" placeholder="Max" class="w-1/2 p-2 border rounded"
-                            min="0" />
+        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0"
+            enter-to-class="opacity-100" leave-active-class="transition ease-in duration-200"
+            leave-from-class="opacity-100" leave-to-class="opacity-0">
+            <div v-if="openFilterModal" class="fixed inset-0 bg-black bg-opacity-50 z-50" @click.self="closeModal">
+                <div class="absolute right-0 top-0 h-full w-80 bg-white p-6 shadow-lg transform transition-transform"
+                    :class="{ 'translate-x-0': openFilterModal, 'translate-x-full': !openFilterModal }">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Filter Options</h2>
+                        <button @click="closeModal" class="text-gray-500 hover:text-gray-700"
+                            aria-label="Close filter modal">
+                            <font-awesome-icon icon="times" />
+                        </button>
                     </div>
-                </div>
 
-                <!-- Star Rating Filter -->
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-medium">Star Rating</label>
-                    <div class="flex flex-col space-y-2">
-                        <label>
-                            <input type="radio" v-model="starRating" value="" class="mr-2" />
-                            Any
-                        </label>
-                        <label>
-                            <input type="radio" v-model="starRating" value="1" class="mr-2" />
-                            1 Star & Up
-                        </label>
-                        <label>
-                            <input type="radio" v-model="starRating" value="2" class="mr-2" />
-                            2 Stars & Up
-                        </label>
-                        <label>
-                            <input type="radio" v-model="starRating" value="3" class="mr-2" />
-                            3 Stars & Up
-                        </label>
-                        <label>
-                            <input type="radio" v-model="starRating" value="4" class="mr-2" />
-                            4 Stars & Up
-                        </label>
-                        <label>
-                            <input type="radio" v-model="starRating" value="5" class="mr-2" />
-                            5 Stars Only
-                        </label>
+                    <!-- Price Range Filter -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-medium mb-2">Price Range</label>
+                        <div class="flex space-x-2">
+                            <input type="number" v-model="minPrice" placeholder="Min" min="0"
+                                class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                            <input type="number" v-model="maxPrice" placeholder="Max" min="0"
+                                class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                        </div>
                     </div>
-                </div>
 
-                <button @click="applyFilter" class="bg-blue-500 text-white w-full py-2 rounded-lg hover:bg-blue-600">
-                    Apply Filters
-                </button>
+                    <!-- Star Rating Filter -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-medium mb-2">Star Rating</label>
+                        <div class="space-y-2">
+                            <label v-for="rating in ['', '1', '2', '3', '4', '5']" :key="rating"
+                                class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                <input type="radio" v-model="starRating" :value="rating"
+                                    class="text-blue-500 focus:ring-blue-500" />
+                                <span>{{ rating === '' ? 'Any' : `${rating} Star${rating === '1' ? '' : 's'} & Up`
+                                    }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Apply Button -->
+                    <button @click="applyFilter"
+                        class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                        Apply Filters
+                    </button>
+                </div>
             </div>
-        </div>
+        </Transition>
     </SidebarLayout>
 </template>
+
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, onBeforeMount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import SidebarLayout from "@/layouts/user/SidebarLayout.vue";
 import ProductList from "@/components/user/product/ProductList.vue";
 import Pagination from "@/components/user/pagination/Pagination.vue";
-import categories from "@/faker/category";
-import products from "@/faker/product";
+import categoryServices from "@/services/categoryServices";
+import productServices from "@/services/productServices";
 
+// Router setup
+const router = useRouter();
 const route = useRoute();
 
-const router = useRouter();
-const category = ref(
-    categories.find((r) => r.slug == route.params.categorySlug)
-);
-
-let productsByCategory = computed(() => {
-    // Ensure products is an array and category is defined
-    if (!products || !category.value) return [];
-    return products.filter((p) => p.category === category.value.id);
-});
+// State management
+const loading = ref(false);
+const category = ref({});
+const productsByCategory = ref([]);
 const sortOrder = ref("");
-
 const openFilterModal = ref(false);
-const minPrice = ref(""); // Minimum price
-const maxPrice = ref(""); // Maximum price
-const starRating = ref(""); // Default rating filter
+const currentPage = ref(parseInt(route.params.page) || 1);
+const totalPages = ref(0);
+const itemsPerPage = ref(5);
+
+// Filter state
+const minPrice = ref("");
+const maxPrice = ref("");
+const starRating = ref("");
 const filterOptions = ref({
     minPrice: null,
     maxPrice: null,
     starRating: null,
 });
-const itemsPerPage = ref(2);
-const currentPage = ref(parseInt(route.params.page) || 1);
 
-watch(
-    () => [route.params.page, route.params.category],
-    ([newPage, newCategory]) => {
-        currentPage.value = parseInt(newPage) || 1;
-
-        if (newCategory) {
-            let selectedCategory = categories.find((cat) => cat.slug === newCategory);
-
-            if (selectedCategory) {
-                category.value = selectedCategory;
-            }
-        }
+// API calls
+const fetchCategory = async () => {
+    try {
+        const response = await categoryServices.gets({
+            limit: 1,
+            filter: ["slug", route.params.categorySlug]
+        });
+        category.value = response.data.data[0];
+    } catch (error) {
+        console.error("Error fetching category:", error);
     }
-);
-
-const totalItems = computed(() => productsByCategory.value.length);
-
-const paginatedItems = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage.value;
-    return productsByCategory.value.slice(start, start + itemsPerPage.value);
-});
-
-const handlePageChange = (page) => {
-    currentPage.value = page;
-    router.push({ name: "category", params: { page: page } });
 };
 
-function closeModal() {
+const fetchProducts = async () => {
+    if (!category.value._id) return;
+
+    loading.value = true;
+    try {
+        const response = await productServices.gets({
+            limit: itemsPerPage.value,
+            page: currentPage.value - 1,
+            filter: ["category", category.value._id],
+            ...filterOptions.value,
+            sort: sortOrder.value
+        });
+
+        productsByCategory.value = response.data.data;
+        totalPages.value = response.data.totalPage;
+    } catch (error) {
+        console.error("Error fetching products:", error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+// Lifecycle hooks
+onBeforeMount(async () => {
+    await fetchCategory();
+    await fetchProducts();
+});
+
+// Watchers
+watch(
+    () => [route.params.page, route.params.categorySlug],
+    async ([newPage, newCategorySlug]) => {
+        if (newPage) {
+            currentPage.value = parseInt(newPage);
+        }
+
+        if (newCategorySlug) {
+            await fetchCategory();
+            await fetchProducts();
+        }
+    },
+    { immediate: true }
+);
+
+watch(
+    () => filterOptions.value,
+    async () => {
+        currentPage.value = 1;
+        await fetchProducts();
+    },
+    { deep: true }
+);
+
+// Event handlers
+const handlePageChange = (page) => {
+    currentPage.value = page;
+    router.push({
+        name: "category",
+        query: {
+            ...route.query,
+            page: page
+        }
+    });
+};
+
+const handleSort = async () => {
+    currentPage.value = 1;
+    await fetchProducts();
+};
+
+const closeModal = () => {
     openFilterModal.value = false;
-}
+};
 
 const applyFilter = () => {
     filterOptions.value = {
-        minPrice: minPrice.value ? minPrice.value : null,
-        maxPrice: maxPrice.value ? maxPrice.value : null,
-        starRating: starRating.value ? starRating.value : null,
+        minPrice: minPrice.value || null,
+        maxPrice: maxPrice.value || null,
+        starRating: starRating.value || null,
     };
     closeModal();
 };

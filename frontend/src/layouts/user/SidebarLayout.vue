@@ -6,14 +6,13 @@
             <aside class="w-1/4 bg-white p-4 shadow-lg rounded-lg">
                 <h2 class="text-xl font-bold mb-4">Categories</h2>
                 <ul class="space-y-2">
-                    <li v-for="category in visibleCategories" :key="category.id"
+                    <li v-for="category in visibleCategories" :key="category._id"
                         class="w-full hover:bg-gray-300 p-2 flex items-center space-x-3 rounded-lg">
                         <RouterLink :to="{
                             name: 'category',
                             params: { categorySlug: category.slug },
                         }" class="text-black w-full block  items-center">
-                            <img :src="category.image" alt="" class="w-6 h-6 mr-2" />
-                            <span>{{ category.name }} ({{ getTotalItems(category.id) }})</span>
+                            <span>{{ category.title }} ({{ getTotalItems(category._id) }})</span>
                         </RouterLink>
                     </li>
                 </ul>
@@ -33,27 +32,55 @@
 </template>
 <script setup>
 import { RouterLink } from "vue-router";
-import { computed, ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
+
+import categoryServices from "@/services/categoryServices";
+import productServices from "@/services/productServices";
+
 import Header from "@/components/user/header/Header.vue";
 import Footer from "@/components/user/footer/Footer.vue";
-import categories from "@/faker/category";
-import products from "@/faker/product";
 
+const categories = ref([]);
+const products = ref([]);
 const displayedCount = ref(2);
-const visibleCategories = computed(() => {
-    return categories.slice(0, displayedCount.value);
-});
 
-// Tính số danh mục còn lại
+const visibleCategories = computed(() => {
+    return categories.value.slice(0, displayedCount.value);
+});
 const hasMoreCategories = computed(
-    () => displayedCount.value < categories.length
+    () => displayedCount.value < categories.value.length
 );
+
+const fetchCategory = async () => {
+    await categoryServices.gets()
+        .then(response => {
+            categories.value = response.data.data
+
+        })
+        .catch(error => {
+            console.error(error)
+        })
+}
+
+const fetchProduct = async () => {
+    await productServices.gets()
+        .then(response => {
+            products.value = response.data.data
+        })
+        .catch(error => {
+            console.error(error)
+        })
+}
+onBeforeMount(() => {
+    fetchProduct()
+    fetchCategory()
+})
 
 const loadMoreCategories = () => {
     displayedCount.value += 10;
 };
 const getTotalItems = (categoryId) => {
-    return products.filter((p) => p.category === categoryId).length;
+    return products.value.filter((p) => p.category === categoryId).length;
 };
 </script>
 

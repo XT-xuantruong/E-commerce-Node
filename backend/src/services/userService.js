@@ -1,13 +1,13 @@
 const User = require("../models/userModel");
 
 var crypto = require("crypto");
-var bcrypt = require("bcrypt");
+
 const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
     const { name, email, password, phone } = newUser;
-  
+
     try {
       const checkUser = await User.findOne({ email: email });
       if (checkUser !== null) {
@@ -81,7 +81,7 @@ const loginUser = (newUser) => {
         messsage: "Successfully",
         access_token: access_token,
         refresh_token: refresh_token,
-        user: checkUser
+        user: checkUser,
         // data: createUser,
       });
     } catch (e) {

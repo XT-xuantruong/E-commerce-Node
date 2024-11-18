@@ -64,7 +64,13 @@ const deleteCategory = async (req, res) => {
 
 const getAllCategory = async (req, res) => {
   try {
-    const response = await categoryService.getAllCategory();
+    const { limit, page, sort, filter } = req.query;
+    const response = await categoryService.getAllCategory(
+      Number(limit),
+      Number(page),
+      sort,
+      filter
+    );
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({

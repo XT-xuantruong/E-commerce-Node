@@ -78,14 +78,52 @@ const deleteCategory = (id) => {
   });
 };
 
-const getAllCategory = () => {
+const getAllCategory = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const totalCategory = await Category.countDocuments();
+      if (filter) {
+        const label = filter[0];
+        const allCategoryFilter = await Category.find({
+          [label]: { $regex: filter[1] },
+        })
+          .limit(limit)
+          .skip(page * limit);
+
+        resolve({
+          status: "ok",
+          messsage: "Get all successfully",
+          totalCategory: totalCategory,
+          pageCurent: Number(page + 1),
+          totalPage: Math.ceil(totalCategory / limit),
+          data: allCategoryFilter,
+        });
+      }
+      if (sort) {
+        const objectSort = {};
+        objectSort[sort[1]] = sort[0];
+        const allCategorySort = await Product.find()
+          .limit(limit)
+          .skip(page * limit)
+          .sort(objectSort);
+
+        resolve({
+          status: "ok",
+          messsage: "Get all successfully",
+          totalCategory: totalCategory,
+          pageCurent: Number(page + 1),
+          totalPage: Math.ceil(totalCategory / limit),
+          data: allCategorySort,
+        });
+      }
       const all = await Category.find();
 
       resolve({
         status: "ok",
         messsage: "Get all successfully",
+        totalCategory: totalCategory,
+        pageCurent: Number(page + 1),
+        totalPage: Math.ceil(totalCategory / limit),
         data: all,
       });
     } catch (e) {

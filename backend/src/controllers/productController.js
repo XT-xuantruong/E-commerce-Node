@@ -82,7 +82,7 @@ const getAllProduct = async (req, res) => {
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
-      message: e,
+      message: e.message,
     });
   }
 };
