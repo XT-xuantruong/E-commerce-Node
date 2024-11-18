@@ -1,5 +1,4 @@
 import ApiService from "./ApiService";
-import { getConfigApp } from "./appConfig";
 import { useUserStore } from "@/stores/user";
 
 class OauthServices extends ApiService {
@@ -27,7 +26,7 @@ class OauthServices extends ApiService {
       email: email,
       password: password,
       confirmPassword: confirmPassword,
-      phone: phone
+      phone: phone,
     };
     console.log(data);
     return this.request({
@@ -49,7 +48,6 @@ class OauthServices extends ApiService {
     });
   }
   async resendOtp(credential) {
-    
     var data = {
       email: credential,
     };
@@ -151,7 +149,6 @@ class OauthServices extends ApiService {
       },
     });
   }
-
 }
 
 export default new OauthServices();

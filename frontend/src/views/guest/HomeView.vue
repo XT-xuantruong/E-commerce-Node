@@ -60,7 +60,7 @@
 
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-        <ProductCard v-for="product in featuredProducts" :key="product.id" :item="product" />
+        <ProductCard v-for="product in featuredProducts" :key="product._id" :item="product" />
       </div>
     </section>
 
@@ -69,19 +69,25 @@
       <h2 class="text-2xl font-bold text-gray-900 mb-8">Danh mục sản phẩm</h2>
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-        <CategoryCard v-for="category in categories" :key="category.id" :category="category" />
+        <CategoryCard v-for="category in categories" :key="category._id" :category="category" />
       </div>
     </section>
   </DefaultLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onBeforeMount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+import productServices from '@/services/productServices'
+import categoryServices from '@/services/categoryServices'
+
 import DefaultLayout from '@/layouts/user/DefaultLayout.vue'
+
 import PromotionCard from '@/components/user/promotion/PromotionCard.vue'
 import ProductCard from '@/components/user/product/ProductCard.vue'
 import CategoryCard from '@/components/user/category/CategoryCard.vue'
+
 const router = useRouter()
 
 // Sample Data
@@ -108,41 +114,34 @@ const promotions = ref([
     image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-1.2.1&auto=format&fit=crop&w=2850&q=80'
   },
 ])
+const featuredProducts = ref([])
+const categories = ref([])
 
-const featuredProducts = ref([
-  {
-    id: 1,
-    name: 'Sản phẩm 1',
-    price: 1200000,
-    originalPrice: 1500000,
-    discount: 20,
-    rating: 4,
-    reviewCount: 123,
-    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-1.2.1&auto=format&fit=crop&w=2850&q=80'
-  },
-  // Thêm các sản phẩm khác
-])
-
-const categories = ref([
-  {
-    id: 1,
-    name: 'Điện thoại',
-    slug: "dien-thoai",
-    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-1.2.1&auto=format&fit=crop&w=2850&q=80'
-  },
-  // Thêm các danh mục khác
-])
+const fetchProduct = async () => {
+  await productServices.gets()
+    .then(response => {
+      featuredProducts.value = response.data.data
+    })
+    .catch(error => {
+      console.error(error)
+    })
+}
+const fetchCategory = async () => {
+  await categoryServices.gets()
+    .then(response => {
+      categories.value = response.data.data
+    })
+    .catch(error => {
+      console.error(error)
+    })
+}
+onBeforeMount(() => {
+  fetchProduct()
+  fetchCategory()
+})
 
 // Methods
 const navigateToShop = () => {
   router.push('/shop')
 }
-
-
-
-
 </script>
-
-<style scoped>
-/* Add any component-specific styles here if needed */
-</style>

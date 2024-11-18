@@ -86,21 +86,28 @@ const deleteProduct = (id) => {
 const getAllProduct = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log("f", filter);
+
       const totalProduct = await Product.estimatedDocumentCount();
       if (filter) {
-        const label = filter[0];
-        const allProductFilter = await Product.find({
-          [label]: { $regex: filter[1] },
-        })
+        const [field, value] = filter;
+
+        const query =
+          field === "category"
+            ? { [field]: value }
+            : { [field]: { $regex: value, $options: "i" } };
+        const allProductFilter = await Product.find(query)
           .limit(limit)
           .skip(page * limit);
+
+        const totalProductFilter = await Product.countDocuments(query);
 
         resolve({
           status: "ok",
           messsage: "Get all successfully",
-          totalProduct: totalProduct,
+          totalProduct: totalProductFilter,
           pageCurent: Number(page + 1),
-          totalPage: Math.ceil(totalProduct / limit),
+          totalPage: Math.ceil(totalProductFilter / limit),
           data: allProductFilter,
         });
       }

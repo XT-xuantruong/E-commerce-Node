@@ -1,10 +1,7 @@
 <template>
-    <div @click="navigateToCategory(category.slug)" class="relative rounded-lg overflow-hidden cursor-pointer group">
-        <img :src="category.image" :alt="category.name"
-            class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-200">
-        <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <h3 class="text-white font-semibold text-lg">{{ category.name }}</h3>
-        </div>
+    <div @click="navigateToCategory(category.slug)" class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer
+                    border-2 border-transparent hover:border-blue-600">
+        <h3 class="text-lg text-blue-600 font-semibold text-center">{{ category.title }}</h3>
     </div>
 </template>
 

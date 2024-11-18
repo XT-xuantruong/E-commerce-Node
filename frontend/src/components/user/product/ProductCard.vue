@@ -1,10 +1,10 @@
 <template>
-    <RouterLink :to="`/product/${item.id}`">
+    <RouterLink :to="`/product/${item._id}`">
         <div class="product-item relative">
-            <span class="badge bg-green-500 absolute m-3 text-white rounded">-{{ item.discount }}%</span>
-            <a href="#" class="btn-wishlist">
+            <!-- <span class="badge bg-green-500 absolute m-3 text-white rounded">-{{ item.discount }}%</span> -->
+            <!-- <a href="#" class="btn-wishlist">
                 <font-awesome-icon :icon="['far', 'heart']" class="size-4" />
-            </a>
+            </a> -->
             <figure>
                 <a href="index.html" title="Sunstar Fresh Melon Juice">
                     <img :src="item.image" :alt="item.title" class="w-full h-auto" />
@@ -13,17 +13,16 @@
             <h3 class="line-clamp-2">
                 {{ item.name }}
             </h3>
-            <span class="qty">{{ item.unit }}</span>
-            <span class="rating">
-                <font-awesome-icon icon="star" class="text-amber-300 inline" />
-                {{ item.rating }}
-            </span>
 
             <div class="flex">
-                <span class="price line-through text-red-500">${{ item.price.toFixed(2) }}</span>
-                <span class="text-xl">
+                <!-- line-through -->
+                <span class="price  text-red-500">{{ formatVND(item.price) }}</span>
+                <!-- <span class="text-xl">
                     ${{ calculateDiscountedPrice(item.price, item.discount).toFixed(2) }}
-                </span>
+                </span> -->
+            </div>
+            <div class="flex">
+                <span class="line-clamp-3">{{ item.description }}</span>
             </div>
             <div class="flex items-center justify-between mt-3">
                 <div class="flex items-center rounded product-qty">
@@ -73,9 +72,17 @@ const decrementQuantity = () => {
     }
 };
 
-const calculateDiscountedPrice = (price, discount) => {
-    return price * (1 - discount / 100);
-};
+function formatVND(amount) {
+    if (isNaN(amount)) {
+        throw new Error("Invalid input: Amount must be a number");
+    }
+
+    return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+}
+
+// const calculateDiscountedPrice = (price, discount) => {
+//     return price * (1 - discount / 100);
+// };
 
 const handleAddToCart = () => {
     const data = {
