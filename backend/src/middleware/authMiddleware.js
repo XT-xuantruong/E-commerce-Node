@@ -18,6 +18,7 @@ const authMiddleware = (req, res, next) => {
     if (payload.isAdmin) {
       next();
     } else {
+      console.log('long');
       return res.status(401).json({
         message: "The authentication",
         status: "ERROR",
@@ -29,7 +30,9 @@ const authMiddleware = (req, res, next) => {
 const authUserMiddleware = (req, res, next) => {
   // console.log(req.headers.Authorization);
 
-  const token = req.headers.Authorization.split(" ")[1];
+  const token =
+    req.headers.authorization.split(" ")[1] ||
+    req.headers.Authorization.split(" ")[1];
   const userId = req.params.id;
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
     if (err) {

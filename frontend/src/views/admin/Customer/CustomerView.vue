@@ -1,19 +1,8 @@
-<!-- CustomerList.vue -->
-<!-- CustomerList.vue -->
+<!-- UserList.vue -->
 <template>
   <DefaultLayout>
     <div class="container mx-auto p-4">
-      <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold">Customer Management</h1>
-        <button
-          @click="openModal()"
-          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Add Customer
-        </button>
-      </div>
-
-      <!-- Add/Edit Customer Modal -->
+      <!-- Add/Edit User Modal -->
       <div
         v-if="showModal"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
@@ -24,7 +13,7 @@
           <!-- Modal Header -->
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium dark:text-white">
-              {{ isEditing ? 'Edit Customer' : 'Add New Customer' }}
+              {{ isEditing ? "Edit User" : "Add New User" }}
             </h3>
             <button
               @click="closeModal"
@@ -41,34 +30,20 @@
                 <!-- First Name Field -->
                 <div class="form-control">
                   <label class="block text-sm font-medium mb-1 dark:text-white">
-                    First Name <span class="text-red-500">*</span>
+                    Name <span class="text-red-500">*</span>
                   </label>
                   <input
-                    v-model="formData.first_name"
+                    v-model="formData.name"
                     class="w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-strokedark dark:bg-boxdark dark:text-white"
-                    :class="{ 'border-red-500': errors.first_name }"
+                    :class="{ 'border-red-500': errors.name }"
                     placeholder="Enter first name"
                   />
-                  <span v-if="errors.first_name" class="text-red-500 text-sm">
-                    {{ errors.first_name }}
+                  <span v-if="errors.name" class="text-red-500 text-sm">
+                    {{ errors.name }}
                   </span>
                 </div>
 
-                <!-- Last Name Field -->
-                <div class="form-control">
-                  <label class="block text-sm font-medium mb-1 dark:text-white">
-                    Last Name <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    v-model="formData.last_name"
-                    class="w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-strokedark dark:bg-boxdark dark:text-white"
-                    :class="{ 'border-red-500': errors.last_name }"
-                    placeholder="Enter last name"
-                  />
-                  <span v-if="errors.last_name" class="text-red-500 text-sm">
-                    {{ errors.last_name }}
-                  </span>
-                </div>
+               
 
                 <!-- Address Field -->
                 <div class="form-control">
@@ -118,23 +93,7 @@
                   </span>
                 </div>
 
-                <!-- Password Field -->
-                <div class="form-control">
-                  <label class="block text-sm font-medium mb-1 dark:text-white">
-                    Password
-                    <span v-if="!isEditing" class="text-red-500">*</span>
-                  </label>
-                  <input
-                    v-model="formData.password"
-                    type="password"
-                    class="w-full p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:border-strokedark dark:bg-boxdark dark:text-white"
-                    :class="{ 'border-red-500': errors.password }"
-                    placeholder="Enter password"
-                  />
-                  <span v-if="errors.password" class="text-red-500 text-sm">
-                    {{ errors.password }}
-                  </span>
-                </div>
+                
               </div>
 
               <!-- Modal Footer -->
@@ -152,7 +111,7 @@
                   class="px-4 py-2 bg-primary text-white text-base font-medium rounded-md shadow-sm hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
                 >
                   <span v-if="isSubmitting">Processing...</span>
-                  <span v-else>{{ isEditing ? 'Update' : 'Add' }}</span>
+                  <span v-else>{{ isEditing ? "Update" : "Add" }}</span>
                 </button>
               </div>
             </form>
@@ -160,7 +119,7 @@
         </div>
       </div>
 
-      <!-- Customer List Table -->
+      <!-- User List Table -->
       <div
         class="mt-6 rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1"
       >
@@ -176,13 +135,9 @@
                 <th
                   class="min-w-[200px] py-4 px-4 font-medium text-black dark:text-white"
                 >
-                  Full Name
+                  Name
                 </th>
-                <th
-                  class="min-w-[200px] py-4 px-4 font-medium text-black dark:text-white"
-                >
-                  Address
-                </th>
+                
                 <th
                   class="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white"
                 >
@@ -193,6 +148,11 @@
                 >
                   Email
                 </th>
+                <th
+                  class="min-w-[200px] py-4 px-4 font-medium text-black dark:text-white"
+                >
+                  Role
+                </th>
                 <th class="py-4 px-4 font-medium text-black dark:text-white">
                   Actions
                 </th>
@@ -200,37 +160,39 @@
             </thead>
             <tbody>
               <tr
-                v-for="customer in customers"
-                :key="customer.id"
+                v-for="user in users"
+                :key="user._id"
                 class="border-b border-[#eee] dark:border-strokedark"
               >
                 <td class="py-5 px-4">
-                  <p class="text-black dark:text-white">{{ customer.id }}</p>
+                  <p class="text-black dark:text-white">{{ user._id }}</p>
                 </td>
                 <td class="py-5 px-4">
                   <p class="text-black dark:text-white">
-                    {{ customer.first_name }} {{ customer.last_name }}
+                    {{ user.name }}
+                  </p>
+                </td>
+               
+                <td class="py-5 px-4">
+                  <p class="text-gray-600 dark:text-gray-400">
+                    {{ user.phone }}
+                  </p>
+                </td>
+                
+                <td class="py-5 px-4">
+                  <p class="text-gray-600 dark:text-gray-400">
+                    {{ user.email }}
                   </p>
                 </td>
                 <td class="py-5 px-4">
                   <p class="text-gray-600 dark:text-gray-400">
-                    {{ customer.address }}
-                  </p>
-                </td>
-                <td class="py-5 px-4">
-                  <p class="text-gray-600 dark:text-gray-400">
-                    {{ customer.phone }}
-                  </p>
-                </td>
-                <td class="py-5 px-4">
-                  <p class="text-gray-600 dark:text-gray-400">
-                    {{ customer.email }}
+                    {{ user.isAdmin ? "Admin" : "Customer" }}
                   </p>
                 </td>
                 <td class="py-5 px-4">
                   <div class="flex items-center space-x-3.5">
                     <button
-                      @click="editCustomer(customer)"
+                      @click="editUser(user)"
                       class="text-yellow-600 hover:text-yellow-900 mr-3"
                     >
                       <svg
@@ -252,7 +214,7 @@
                       </svg>
                     </button>
                     <button
-                      @click="deleteCustomer(customer.id)"
+                      @click="deleteUser(user._id)"
                       class="text-red-600 hover:text-red-900"
                     >
                       <svg
@@ -264,7 +226,7 @@
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M13.7535 2.47502H11.5879V1.9969C11.5879 1.15315 10.9129 0.478149 10.0691 0.478149H7.90352C7.05977 0.478149 6.38477 1.15315 6.38477 1.9969V2.47502H4.21914C3.40352 2.47502 2.72852 3.15002 2.72852 3.96565V4.8094C2.72852 5.42815 3.09414 5.9344 3.62852 6.1594L4.07852 15.4688C4.13477 16.6219 5.09102 17.5219 6.24414 17.5219H11.7004C12.8535 17.5219 13.8098 16.6219 13.866 15.4688L14.3441 6.13127C14.8785 5.90627 15.2441 5.3719 15.2441 4.78127V3.93752C15.2441 3.15002 14.5691 2.47502 13.7535 2.47502ZM7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
+                          d="M7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
                           fill=""
                         />
                         <path
@@ -293,132 +255,151 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import DefaultLayout from '@/layouts/admin/DefaultLayout.vue'
+import { ref, reactive, onBeforeMount } from "vue";
+import DefaultLayout from "@/layouts/admin/DefaultLayout.vue";
+import oauthServices from "@/services/oauthServices";
 
 // State
-const customers = ref([])
-const showModal = ref(false)
-const isEditing = ref(false)
-const editingId = ref(null)
-const isSubmitting = ref(false)
-const errors = reactive({})
+const users = ref([
+  {
+    name: "John",
+    address: "123 Main St",
+    phone: "1234567890",
+    email: "john@example.com",
+  },
+]);
+const showModal = ref(false);
+const isEditing = ref(false);
+const editingId = ref(null);
+const isSubmitting = ref(false);
+const errors = reactive({});
 
 const initialFormState = {
-  first_name: '',
-  last_name: '',
-  address: '',
-  phone: '',
-  email: '',
-  password: '',
-}
+  name: "",
+  address: "",
+  phone: "",
+  email: "",
+};
 
-const formData = reactive({ ...initialFormState })
+const formData = reactive({ ...initialFormState });
 
 // Validation
 const validateForm = () => {
-  errors.first_name = !formData.first_name ? 'Please enter first name' : ''
-  errors.last_name = !formData.last_name ? 'Please enter last name' : ''
-  errors.address = !formData.address ? 'Please enter address' : ''
+  errors.first_name = !formData.first_name ? "Please enter first name" : "";
+  errors.last_name = !formData.last_name ? "Please enter last name" : "";
+  errors.address = !formData.address ? "Please enter address" : "";
 
   // Validate phone
   errors.phone = !formData.phone
-    ? 'Please enter phone number'
+    ? "Please enter phone number"
     : !/^[0-9]{10,11}$/.test(formData.phone)
-      ? 'Invalid phone number'
-      : ''
+    ? "Invalid phone number"
+    : "";
 
   // Validate email
   errors.email = !formData.email
-    ? 'Please enter email'
+    ? "Please enter email"
     : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-      ? 'Invalid email format'
-      : ''
+    ? "Invalid email format"
+    : "";
 
-  // Validate password only for new customer
+  // Validate password only for new user
   if (!isEditing.value) {
     errors.password = !formData.password
-      ? 'Please enter password'
+      ? "Please enter password"
       : formData.password.length < 6
-        ? 'Password must be at least 6 characters'
-        : ''
+      ? "Password must be at least 6 characters"
+      : "";
   }
 
-  return !Object.values(errors).some(error => error)
-}
+  return !Object.values(errors).some((error) => error);
+};
 
-// Modal handlers
 const openModal = () => {
-  showModal.value = true
-}
+  showModal.value = true;
+};
 
 const closeModal = () => {
-  showModal.value = false
-  resetForm()
-}
+  showModal.value = false;
+  resetForm();
+};
 
-// Form handlers
 const resetForm = () => {
-  Object.assign(formData, initialFormState)
-  Object.keys(errors).forEach(key => (errors[key] = ''))
-  isEditing.value = false
-  editingId.value = null
-}
+  Object.assign(formData, initialFormState);
+  Object.keys(errors).forEach((key) => (errors[key] = ""));
+  isEditing.value = false;
+  editingId.value = null;
+};
 
-// Customer CRUD operations
-const addCustomer = async () => {
+const editUser = (user) => {
+  isEditing.value = true;
+  editingId.value = user.id;
+  Object.assign(formData, user);
+  showModal.value = true;
+};
+
+const updateUser = async () => {
   try {
-    isSubmitting.value = true
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    const newCustomer = {
-      id: customers.value.length + 1,
-      ...formData,
-    }
-    customers.value.push(newCustomer)
-    closeModal()
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-const editCustomer = customer => {
-  isEditing.value = true
-  editingId.value = customer.id
-  Object.assign(formData, customer)
-  openModal()
-}
-
-const updateCustomer = async () => {
-  try {
-    isSubmitting.value = true
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    const index = customers.value.findIndex(c => c.id === editingId.value)
+    isSubmitting.value = true;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const index = users.value.findIndex((u) => u.id === editingId.value);
     if (index !== -1) {
-      customers.value[index] = { ...customers.value[index], ...formData }
+      users.value[index] = { ...users.value[index], ...formData };
     }
-    closeModal()
+    closeModal();
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
 
-const deleteCustomer = id => {
-  if (confirm('Are you sure you want to delete this customer?')) {
-    customers.value = customers.value.filter(c => c.id !== id)
+const deleteUser = async (id) => {
+  if (confirm("Are you sure you want to delete this user?")) {
+    const accessToken = localStorage.getItem('admin.access');
+    try {
+      await oauthServices.delete(id, accessToken);
+      users.value = users.value.filter(user => user._id !== id);
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+    }
   }
-}
+};
+
 
 const handleSubmit = async () => {
-  if (!validateForm()) return
+  if (!validateForm()) return;
 
   if (isEditing.value) {
-    await updateCustomer()
+    await updateUser();
   } else {
-    await addCustomer()
+    try {
+      isSubmitting.value = true;
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Add new user
+      users.value.push({
+        id: users.value.length + 1,
+        ...formData,
+      });
+      closeModal();
+    } finally {
+      isSubmitting.value = false;
+    }
   }
+};
+
+const fetchUser = async () => {
+  const accessToken = localStorage.getItem('admin.access');
+  await oauthServices.gets(accessToken)
+    .then(response => {
+      users.value = response.data.data
+    })
+    .catch(error => {
+      console.error(error)
+    })
 }
+
+onBeforeMount(() => {
+  fetchUser()
+})
 </script>

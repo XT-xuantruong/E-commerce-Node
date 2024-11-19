@@ -17,7 +17,6 @@ const createProduct = async (req, res) => {
 
     if (
       !name ||
-      !image ||
       !price ||
       !countInStock ||
       !description ||

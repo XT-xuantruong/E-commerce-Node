@@ -156,16 +156,7 @@ const menuGroups = ref([
         route: "#",
         children: [{ label: "Customer management", route: "/admin/customers" }],
       },
-      {
-        icon: "image-portrait",
-        label: "User",
-        route: "#",
-        children: [
-          { label: "Settings", route: "/admin/users/settings" },
-          { label: "role", route: "/admin/users/roles" },
-          { label: "Admin Management", route: "/admin/users/permissions" },
-        ],
-      },
+     
       {
         icon: "truck",
         label: "Order",

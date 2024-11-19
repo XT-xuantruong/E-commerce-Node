@@ -50,6 +50,17 @@ class OauthServices extends ApiService {
     return this.request(option);
   }
 
+  async gets(access) {
+    const option = {
+      method: "get",
+      url: `/${this.entity}/getall/`,
+      headers: {
+        Authorization: `Bearer ${access}`,
+      },
+    };
+    return this.request(option);
+  }
+
   async getme(access, id) {
     console.log(access);
 
@@ -75,6 +86,16 @@ class OauthServices extends ApiService {
       method: "put",
       url: `/${this.entity}/update-user/${id}/`,
       data: data,
+    });
+  }
+
+  async delete(id, access) {
+    return this.request({
+      method: "delete",
+      url: `/${this.entity}/delete-user/${id}/`,
+      headers: {
+        Authorization: `Bearer ${access}`,
+      },
     });
   }
 }

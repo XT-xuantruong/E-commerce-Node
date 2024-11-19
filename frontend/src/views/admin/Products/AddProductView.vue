@@ -12,35 +12,6 @@
           @submit.prevent="submitImport"
           class="p-6 space-y-6 dark:bg-boxdark focus:ring-blue-200 dark:text-white"
         >
-          <!-- Basic Information -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Select Supplier -->
-            <div class="form-control">
-              <label class="block text-sm font-medium">Supplier</label>
-              <select
-                v-model="selectedSupplier"
-                required
-                class="mt-1 block w-full p-2 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
-              >
-                <option value="" disabled>Select supplier</option>
-                <option value="1">Supplier A</option>
-                <option value="2">Supplier B</option>
-                <option value="3">Supplier C</option>
-              </select>
-            </div>
-
-            <!-- Import Date -->
-            <div class="form-control">
-              <label class="block text-sm font-medium">Import Date</label>
-              <input
-                type="date"
-                v-model="importDate"
-                required
-                class="mt-1 block w-full p-2 focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
-              />
-            </div>
-          </div>
-
           <!-- Product List -->
           <div class="space-y-4">
             <div class="flex justify-between items-center">
@@ -74,11 +45,7 @@
                     >
                       Category
                     </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
-                    >
-                      Brand
-                    </th>
+
                     <th
                       class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
                     >
@@ -114,11 +81,9 @@
                       {{ product.name }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      {{ product.category }}
+                      {{ findcategory(product.category) }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      {{ product.brand }}
-                    </td>
+
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                       {{ product.quantity }}
                     </td>
@@ -161,28 +126,6 @@
                     </td>
                   </tr>
                 </tbody>
-                <tfoot class="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <td
-                      colspan="4"
-                      class="px-6 py-4 text-sm font-medium text-gray-500 dark:text-gray-300"
-                    >
-                      Total:
-                    </td>
-                    <td
-                      class="px-6 py-4 text-sm text-gray-500 dark:text-gray-300"
-                    >
-                      {{ totalQuantity }}
-                    </td>
-                    <td class="px-6 py-4"></td>
-                    <td
-                      class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white"
-                    >
-                      {{ formatCurrency(totalAmount) }}
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
           </div>
@@ -201,7 +144,7 @@
               :disabled="isSubmitting"
               class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-md hover:opacity-90 transition-all disabled:opacity-50"
             >
-              {{ isSubmitting ? 'Processing...' : 'Import Products' }}
+              {{ isSubmitting ? "Processing..." : "Import Products" }}
             </button>
           </div>
         </form>
@@ -217,106 +160,97 @@
       >
         {{ notification.message }}
       </div>
-      <ImportReceipt v-if="showReceipt" :importData="importData" />
     </div>
   </DefaultLayout>
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
-import DefaultLayout from '@/layouts/admin/DefaultLayout.vue'
-import ProductModal from '@/components/admin/ProductModal.vue'
-import ImportReceipt from '@/components/admin/ImportReceipt.vue'
+import { ref, computed, reactive, onBeforeMount } from "vue";
+import DefaultLayout from "@/layouts/admin/DefaultLayout.vue";
+import ProductModal from "@/components/admin/ProductModal.vue";
+import categoryServices from "@/services/categoryServices";
+import productServices from '@/services/productServices'
 
 // State
-const selectedSupplier = ref('')
-const importDate = ref(new Date().toISOString().split('T')[0])
-const products = ref([])
-const isSubmitting = ref(false)
-const showReceipt = ref(false)
-const importData = ref(null)
+const categories = ref([]);
+const importDate = ref(new Date().toISOString().split("T")[0]);
+const products = ref([]);
+const isSubmitting = ref(false);
 const notification = reactive({
-  message: '',
-  type: 'success',
-})
+  message: "",
+  type: "success",
+});
 
 // Methods
-const handleAddProduct = newProduct => {
-  products.value.push(newProduct)
-}
+const handleAddProduct = (newProduct) => {
+  products.value.push(newProduct);
+};
 
-const removeProduct = index => {
-  products.value.splice(index, 1)
-}
+const removeProduct = (index) => {
+  products.value.splice(index, 1);
+};
 
-const formatCurrency = value => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value)
-}
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+};
 
 const resetForm = () => {
-  selectedSupplier.value = ''
-  importDate.value = new Date().toISOString().split('T')[0]
-  products.value = []
-  notification.message = ''
-  showReceipt.value = false
-  importData.value = null
-}
-
-// Computed
-const totalQuantity = computed(() => {
-  return products.value.reduce(
-    (sum, product) => sum + (Number(product.quantity) || 0),
-    0,
-  )
-})
-
-const totalAmount = computed(() => {
-  return products.value.reduce((sum, product) => {
-    return sum + (Number(product.quantity) || 0) * (Number(product.price) || 0)
-  }, 0)
-})
+  products.value = [];
+  notification.message = "";
+};
 
 const submitImport = async () => {
   if (products.value.length === 0) {
-    notification.message = 'Please add at least one product'
-    notification.type = 'error'
-    return
+    notification.message = "Please add at least one product";
+    notification.type = "error";
+    return;
   }
 
   try {
-    isSubmitting.value = true
+    isSubmitting.value = true;
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    // Prepare import data
-    importData.value = {
-      supplier: selectedSupplier.value,
-      importDate: importDate.value,
-      products: [...products.value],
-      totalQuantity: totalQuantity.value,
-      totalAmount: totalAmount.value,
-    }
+    products.value.forEach(async (element) => {
+      await productServices
+        .create(element)
+        .then((response) => {
+          products.value = response.data.data;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    });
 
-    console.log('Import data:', importData.value)
-
-    // Show success notification
-    notification.message = 'Products imported successfully!'
-    notification.type = 'success'
-
-    // Show receipt
-    showReceipt.value = true
+    notification.message = "Products imported successfully!";
+    notification.type = "success";
   } catch (error) {
-    console.error('Import error:', error)
-    notification.message = 'An error occurred. Please try again.'
-    notification.type = 'error'
-    showReceipt.value = false
-    importData.value = null
+    console.error("Import error:", error);
+    notification.message = "An error occurred. Please try again.";
+    notification.type = "error";
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
+
+const fetchCategory = async () => {
+  await categoryServices
+    .gets()
+    .then((response) => {
+      categories.value = response.data.data;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+onBeforeMount(() => {
+  fetchCategory();
+});
+
+const findcategory = (id) => {
+  return categories.value.find((c) => c._id == id).title;
+};
 </script>

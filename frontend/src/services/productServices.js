@@ -21,6 +21,22 @@ class ProductServices extends ApiService {
     };
     return this.request(option);
   }
+
+  async create(data) {
+    const adminStore = useAdminStore();
+    console.log(adminStore.admin.isAuthenticated, adminStore.admin.access);
+
+    const option = {
+      method: "post",
+      url: `/${this.entity}/`,
+      data: data,
+      headers: {
+        Authorization: `Bearer ${adminStore.admin.access}`,
+      },
+    };
+    return this.request(option);
+  }
+
   async delete(id) {
     const adminStore = useAdminStore();
     return this.request({
