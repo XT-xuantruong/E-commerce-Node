@@ -7,13 +7,12 @@ import AddProductView from "@/views/admin/Products/AddProductView.vue";
 import CategoryProductView from "@/views/admin/Products/CategoryProductView.vue";
 import CustomerView from "@/views/admin/Customer/CustomerView.vue";
 
-
 export const adminRoutes = [
 
   // Admin routes
   {
     path: "/admin/",
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false },
     children: [
       {
         path: "",

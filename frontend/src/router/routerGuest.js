@@ -34,16 +34,22 @@ export const publicRoutes = [
     path: "/cart",
     name: "cart",
     component: CartView,
+    meta: { requiresAuth: true },
+
   },
   {
     path: "/myaccount",
     name: "myaccount",
     component: MyAccountView,
+    meta: { requiresAuth: true },
+
   },
   {
     path: "/checkout",
     name: "checkout",
     component: CheckoutView,
+    meta: { requiresAuth: true },
+
   },
   {
     path: "/:catchAll(.*)",
