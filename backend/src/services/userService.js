@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const blacklistService = require('./blacklistService');
+const blacklistService = require("./blacklistService");
 
 var crypto = require("crypto");
 
@@ -142,14 +142,20 @@ const deleteUser = (id) => {
   });
 };
 
-const getAllUser = (id) => {
+const getAllUser = (limit, page) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const all = await User.find();
+      const totalUser = await User.estimatedDocumentCount();
+      const all = await User.find()
+        .limit(limit)
+        .skip(page * limit);
 
       resolve({
         status: "ok",
-        messsage: "delete Successfully",
+        messsage: "getall Successfully",
+        totalUser: totalUser,
+        pageCurent: Number(page + 1),
+        totalPage: Math.ceil(totalUser / limit),
         data: all,
       });
     } catch (e) {
@@ -183,17 +189,17 @@ const getDetailUser = (id) => {
 
 const logoutUser = (access_token, refresh_token) => {
   return new Promise(async (resolve, reject) => {
-      try {
-          await blacklistService.addToBlacklist(access_token);
-          await blacklistService.addToBlacklist(refresh_token);
+    try {
+      await blacklistService.addToBlacklist(access_token);
+      await blacklistService.addToBlacklist(refresh_token);
 
-          resolve({
-              status: "ok",
-              message: "Logout Successfully",
-          });
-      } catch (e) {
-          reject(e);
-      }
+      resolve({
+        status: "ok",
+        message: "Logout Successfully",
+      });
+    } catch (e) {
+      reject(e);
+    }
   });
 };
 
@@ -204,5 +210,5 @@ module.exports = {
   deleteUser,
   getAllUser,
   getDetailUser,
-  logoutUser
+  logoutUser,
 };

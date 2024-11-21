@@ -1,7 +1,10 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 
-export const useToastStore = defineStore('toast',{
+export const useToastStore = defineStore("toast", {
+  persist: {
+    enabled: true,
+  },
 
   state: () => ({
     ms: 0,

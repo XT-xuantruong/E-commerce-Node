@@ -50,13 +50,14 @@ class OauthServices extends ApiService {
     return this.request(option);
   }
 
-  async gets(access) {
+  async gets(access, params) {
     const option = {
       method: "get",
       url: `/${this.entity}/getall/`,
       headers: {
         Authorization: `Bearer ${access}`,
       },
+      params: { ...params },
     };
     return this.request(option);
   }

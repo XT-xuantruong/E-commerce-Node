@@ -1,26 +1,30 @@
 <script setup>
+import { onBeforeMount, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router';
 import DefaultLayout from '@/layouts/admin/DefaultLayout.vue'
-import { onBeforeMount, ref } from 'vue'
-
-import ProductOne from '@/assets/images/product/product-01.png'
-import ProductTwo from '@/assets/images/product/product-02.png'
-import ProductThree from '@/assets/images/product/product-03.png'
-import ProductFour from '@/assets/images/product/product-04.png'
 import productServices from '@/services/productServices'
 import categoryServices from '@/services/categoryServices'
+import Pagination from '@/components/user/pagination/Pagination.vue';
 
 const products = ref([])
 const categories = ref([])
 
+const route = useRoute()
+const router = useRouter()
 const isEditModalOpen = ref(false)
 const selectedProduct = ref(null)
 const isSubmitting = ref(false)
-
-
+const itemsPerPage = ref(5);
+const currentPage = ref(parseInt(route.params.query) || 1);
+const totalPages = ref(0);
 const fetchProduct = async () => {
-  await productServices.gets()
+  await productServices.gets({
+    limit: itemsPerPage.value,
+    page: currentPage.value - 1,
+  })
     .then(response => {
       products.value = response.data.data
+      totalPages.value = response.data.totalPage
     })
     .catch(error => {
       console.error(error)
@@ -44,25 +48,15 @@ const findcategory = (id) => {
 }
 const openEditModal = product => {
   selectedProduct.value = { ...product }
-  // selectedProduct.value.category = findcategory(product.category)
-
   isEditModalOpen.value = true
-
 }
 
 const handleUpdateProduct = async () => {
   try {
     isSubmitting.value = true
-    // const index = products.value.findIndex(
-    //   p => p.id === selectedProduct.value.id,
-    // )
-    // if (index !== -1) {
-    //   products.value[index] = { ...selectedProduct.value }
-    // }
     productServices.update(selectedProduct.value).catch(e => {
       console.log(e);
     })
-
     isEditModalOpen.value = false
   } catch (error) {
     console.error('Error updating product:', error)
@@ -103,13 +97,31 @@ const removeImage = index => {
 const deleteProduct = async (product) => {
   productServices.delete(product._id)
 }
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  router.push({
+    name: "listproduct",
+    query: { ...route.query, page }
+  });
+};
+
+watch(
+  () => [route.query.page],
+  async ([newPage]) => {
+    if (newPage) {
+      currentPage.value = parseInt(newPage);
+      await fetchProduct();
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <DefaultLayout>
     <div class="flex flex-col gap-10">
       <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-        <!-- Previous table header and rows code remains the same -->
         <div class="py-6 px-2 md:px-6 xl:px-7.5">
           <h4 class="text-xl font-bold text-black dark:text-white">Products</h4>
         </div>
@@ -122,16 +134,12 @@ const deleteProduct = async (product) => {
           <div class="col-span-2 hidden items-center sm:flex">
             <p class="font-medium">Category</p>
           </div>
-          <!-- <div class="col-span-2 hidden items-center sm:flex">
-            <p class="font-medium">Brand</p>
-          </div> -->
           <div class="col-span-1 flex items-center">
             <p class="font-medium">Price</p>
           </div>
           <div class="col-span-1 flex items-center">
             <p class="font-medium">Amount</p>
           </div>
-
           <div class="col-span-1 flex items-center">
             <p class="font-medium">Actions</p>
           </div>
@@ -155,11 +163,6 @@ const deleteProduct = async (product) => {
               {{ findcategory(product.category) }}
             </p>
           </div>
-          <!-- <div class="col-span-2 hidden items-center sm:flex">
-            <p class="text-sm font-medium text-black dark:text-white">
-              {{ product.brand }}
-            </p>
-          </div> -->
           <div class="col-span-1 flex items-center">
             <p class="text-sm font-medium text-black dark:text-white">
               ${{ product.price }}
@@ -194,6 +197,10 @@ const deleteProduct = async (product) => {
               </button>
             </div>
           </div>
+        </div>
+        <div>
+          <Pagination v-if="totalPages > 1" :total-page="totalPages" :current-page="currentPage" :max-visible-pages="5"
+            @page-changed="handlePageChange" />
         </div>
       </div>
 

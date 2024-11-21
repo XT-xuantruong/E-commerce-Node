@@ -1,14 +1,25 @@
 <script setup>
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router';
 import DefaultLayout from '@/layouts/admin/DefaultLayout.vue'
 import categoryServices from '@/services/categoryServices';
+import Pagination from '@/components/user/pagination/Pagination.vue';
 
+const route = useRoute()
+const router = useRouter()
+const itemsPerPage = ref(5);
+const currentPage = ref(parseInt(route.params.query) || 1);
+const totalPages = ref(0);
 // State
 const categories = ref([])
 const fetchCategory = async () => {
-  await categoryServices.gets()
+  await categoryServices.gets({
+    limit: itemsPerPage.value,
+    page: currentPage.value - 1,
+  })
     .then(response => {
       categories.value = response.data.data
+      totalPages.value = response.data.totalPage
     })
     .catch(error => {
       console.error(error)
@@ -74,6 +85,24 @@ const handleDelete = id => {
     categoryServices.delete(id)
   }
 }
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  router.push({
+    name: "categoryproduct",
+    query: { ...route.query, page }
+  });
+};
+
+watch(
+  () => [route.query.page],
+  async ([newPage]) => {
+    if (newPage) {
+      currentPage.value = parseInt(newPage);
+      await fetchCategory();
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -170,7 +199,14 @@ const handleDelete = id => {
                 </td>
               </tr>
             </tbody>
+
           </table>
+          <div class="w-full flex items-center justify-center">
+
+            <Pagination v-if="totalPages > 1" :total-page="totalPages" :current-page="currentPage"
+              :max-visible-pages="5" @page-changed="handlePageChange" />
+
+          </div>
         </div>
       </div>
 
