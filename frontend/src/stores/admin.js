@@ -2,6 +2,9 @@ import { defineStore } from "pinia";
 import axios from "axios";
 
 export const useAdminStore = defineStore("admin", {
+  persist: {
+    enabled: true, // Lưu trạng thái nếu cần
+  },
   state: () => ({
     admin: {
       isAuthenticated: false,

@@ -2,6 +2,9 @@ import { defineStore } from "pinia";
 import axios from "axios";
 
 export const useUserStore = defineStore("user", {
+  persist: {
+    enabled: true,
+  },
   state: () => ({
     user: {
       isAuthenticated: false,
