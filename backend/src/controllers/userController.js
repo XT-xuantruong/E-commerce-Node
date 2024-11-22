@@ -117,13 +117,7 @@ const deleteUser = async (req, res) => {
 
 const getAllUser = async (req, res) => {
   try {
-    const { limit, page, sort, filter } = req.query;
-    const response = await userService.getAllUser(
-      Number(limit),
-      Number(page),
-      sort,
-      filter
-    );
+    const response = await userService.getAllUser();
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
@@ -171,6 +165,7 @@ const refreshToken = async (req, res) => {
 const logoutUser = async (req, res) => {
   try {
     const { access_token, refresh_token } = req.body;
+    console.log("long ngon", access_token);
     const response = await userService.logoutUser(access_token, refresh_token);
     return res.status(200).json(response);
   } catch (e) {

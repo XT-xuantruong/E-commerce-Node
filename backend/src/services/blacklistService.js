@@ -3,7 +3,6 @@ const BlacklistedToken = require('../models/blacklistedTokenModel');
 const blacklistService = {
     addToBlacklist: async (token) => {
         try {
-            console.log(token);
             
             await BlacklistedToken.create({ token });
             return true;

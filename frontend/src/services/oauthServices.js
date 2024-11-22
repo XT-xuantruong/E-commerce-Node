@@ -36,11 +36,10 @@ class OauthServices extends ApiService {
     });
   }
 
-  async logout() {
-    const state = useUserStore();
+  async logout(access, refresh) {    
     const data = {
-      access_token: state.user.access,
-      refresh_token: state.user.refresh,
+      access_token: access,
+      refresh_token: refresh,
     };
     const option = {
       method: "post",

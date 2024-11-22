@@ -189,6 +189,7 @@ const getDetailUser = (id) => {
 
 const logoutUser = (access_token, refresh_token) => {
   return new Promise(async (resolve, reject) => {
+   
     try {
       await blacklistService.addToBlacklist(access_token);
       await blacklistService.addToBlacklist(refresh_token);

@@ -78,7 +78,7 @@ const handleSubmit = async (event) => {
 
     userStore.setUserInfo(userResponse.data.data);
 
-    // router.push("/");
+    router.push("/");
   } catch (error) {
     formError.value = "Invalid email or password";
     console.error("Login error:", error);
