@@ -105,14 +105,6 @@ const menuItems = [
     label: "Thông tin cá nhân",
     to: { name: "myaccount", query: { tab: "profile" } },
   },
-  {
-    label: "Địa chỉ",
-    to: { name: "myaccount", query: { tab: "address" } },
-  },
-  {
-    label: "Danh sách yêu thích",
-    to: { name: "myaccount", query: { tab: "wishlist" } },
-  },
 ];
 // State
 const searchQuery = ref("");
@@ -153,7 +145,7 @@ onBeforeUnmount(() => {
 });
 
 const handleLogout = async () => {
-  await oauthServices.logout();
+  await oauthServices.logout(userStore.user.access, userStore.user.refresh);
   userStore.removeToken();
   userStore.$reset();
   router.push("/login");
