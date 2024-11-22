@@ -76,17 +76,23 @@ class OauthServices extends ApiService {
   }
 
   async updateProfile(id, data) {
-    var data = {
-      name: data.name,
-      phone: data.phone,
-      email: data.email,
-    };
-    console.log("data update", data);
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("phone", data.phone);
+    formData.append("email", data.email);
+    if (data.avatar) {
+      formData.append("avatar", data.avatar);
+    }
+    console.log("FormData for update", formData);
 
     return this.request({
       method: "put",
       url: `/${this.entity}/update-user/${id}/`,
-      data: data,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
     });
   }
 

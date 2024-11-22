@@ -32,6 +32,9 @@ const userSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    avatar: {
+      type: String,
+    },
     // access_token: {
     //   type: String,
     //   required: true,

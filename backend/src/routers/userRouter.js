@@ -6,11 +6,16 @@ const {
   authMiddleware,
   authUserMiddleware,
 } = require("../middleware/authMiddleware");
+const { uploadSingleImage } = require("../middleware/uploadMiddleware");
 
 router.post("/sign-up", userController.createUser);
 router.post("/sign-in", userController.loginUser);
 router.post("/logout", userController.logoutUser);
-router.put("/update-user/:id", userController.updateUser);
+router.put(
+  "/update-user/:id",
+  uploadSingleImage("avatar"),
+  userController.updateUser
+);
 router.delete("/delete-user/:id", authMiddleware, userController.deleteUser);
 router.get("/getall", authMiddleware, userController.getAllUser);
 router.get(

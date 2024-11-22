@@ -4,13 +4,21 @@ const Product = require("../models/productModel");
 
 const createProduct = (newProduct) => {
   return new Promise(async (resolve, reject) => {
-    const { name, image, price, countInStock, description, category } =
-      newProduct;
+    const {
+      name,
+      thumbnail,
+      images,
+      price,
+      countInStock,
+      description,
+      category,
+    } = newProduct;
 
     try {
       const createdProduct = await Product.create({
         name,
-        image,
+        thumbnail,
+        images,
         price,
         countInStock,
         description,

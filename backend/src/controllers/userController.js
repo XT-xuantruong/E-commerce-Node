@@ -93,6 +93,9 @@ const updateUser = async (req, res) => {
         message: "The input is required",
       });
     }
+    if (req.file) {
+      data.avatar = `/uploads/images/${req.file.filename}`;
+    }
     const response = await userService.updateUser(userId, data);
     return res.status(200).json(response);
   } catch (e) {

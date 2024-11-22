@@ -7,7 +7,7 @@
             </a> -->
             <figure>
                 <a href="index.html" title="Sunstar Fresh Melon Juice">
-                    <img :src="item.image" :alt="item.title" class="w-full h-auto" />
+                    <img :src="'http://127.0.0.1:8088/' + item.thumbnail" :alt="item.title" class="w-full h-auto" />
                 </a>
             </figure>
             <h3 class="line-clamp-2">
