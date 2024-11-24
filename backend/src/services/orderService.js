@@ -1,67 +1,98 @@
 const Order = require("../models/orderModel");
+const Product = require("../models/productModel");
 
 // const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
 
-const createOrder = (newProduct) => {
-  return new Promise(async (resolve, reject) => {
-    const {
-      name,
-      thumbnail,
-      images,
-      price,
-      countInStock,
-      description,
-      category,
-    } = newProduct;
+const createOrder = (orderData) => {
+  console.log(orderData);
 
+  return new Promise(async (resolve, reject) => {
     try {
-      const createdProduct = await Order.create({
-        name,
-        thumbnail,
-        images,
-        price,
-        countInStock,
-        description,
-        category,
+      const validatedItems = await Promise.all(
+        orderData.orderItems.map(async (item) => {
+          const product = await Product.findById(item._id);
+          console.log(product);
+
+          return {
+            name: product.name,
+            amount: item.quantity,
+            image: item.image,
+            price: product.price,
+            product: product._id,
+            priceAtOrder: product.price,
+          };
+        })
+      );
+
+      const order = new Order({
+        orderItems: validatedItems,
+        shippingAddress: orderData.shippingAddress,
+        itemsPrice: orderData.itemsPrice,
+        shippingPrice: orderData.shippingPrice,
+        taxPrice: orderData.taxPrice,
+        totalPrice: orderData.totalPrice,
+        user: orderData.user,
+        orderStatus: "Pending",
       });
 
-      if (createdProduct) {
-        resolve({
-          status: "ok",
-          messsage: "Product created successfully",
-          data: createdProduct,
-        });
-      }
+      const savedOrder = await order.save();
+
+      await Promise.all(
+        validatedItems.map(async (item) => {
+          await Product.findByIdAndUpdate(
+            item.product,
+            {
+              $inc: { countInStock: -item.amount },
+            },
+            { new: true }
+          );
+        })
+      );
+
+      resolve({
+        status: "OK",
+        message: "Successfully created order",
+        data: savedOrder,
+      });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message,
+      });
     }
   });
 };
 
-const updateOrder = (id, data) => {
+const updateOrder = (id, status) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const checkProduct = await Order.findOne({ _id: id });
-      console.log(checkProduct);
+      const checkOrder = await Order.findOne({ _id: id });
 
-      if (checkProduct === null) {
+      if (checkOrder === null) {
         resolve({
-          status: "ok",
-          messsage: "The product is not existing",
+          status: "ERR",
+          message: "The order is not existing",
         });
       }
 
-      const updateProduct = await Order.findByIdAndUpdate(id, data, {
-        new: true,
-      });
+      const updatedOrder = await Order.findByIdAndUpdate(
+        id,
+        { orderStatus: status },
+        { new: true }
+      );
+      // ).populate('user', 'name email')
+      //   .populate('orderItems.product', 'name price');
 
       resolve({
-        status: "ok",
-        messsage: "Successfully",
-        data: updateProduct,
+        status: "OK",
+        message: "Successfully updated order status",
+        data: updatedOrder,
       });
     } catch (e) {
-      reject(e);
+      reject({
+        status: "ERR",
+        message: e.message,
+      });
     }
   });
 };
@@ -69,21 +100,21 @@ const updateOrder = (id, data) => {
 const deleteOrder = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const checkProduct = await Order.findOne({ _id: id });
+      const checkOrder = await Order.findOne({ _id: id });
 
-      if (checkProduct === null) {
+      if (checkOrder === null) {
         resolve({
           status: "ok",
-          messsage: "The product is not existing",
+          message: "The order is not existing",
         });
       }
 
-      const deleteProduct = await Order.findByIdAndDelete(id);
+      const deletedOrder = await Order.findByIdAndDelete(id);
 
       resolve({
         status: "ok",
-        messsage: "delete Successfully",
-        data: deleteProduct,
+        message: "Successfully deleted order",
+        data: deletedOrder,
       });
     } catch (e) {
       reject(e);

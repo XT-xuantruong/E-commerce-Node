@@ -22,7 +22,6 @@ const oderSchema = new mongoose.Schema(
       country: { type: String, required: true },
       phone: { type: Number, required: true },
     },
-    paymentMethod: { type: String, required: true },
     itemsPrice: { type: Number, required: true },
     shippingPrice: { type: Number, required: true },
     taxPrice: { type: Number, required: true },
