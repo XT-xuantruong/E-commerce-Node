@@ -1,8 +1,10 @@
 <script setup>
 import DefaultLayout from "@/layouts/admin/DefaultLayout.vue";
-import { onBeforeMount, ref, computed } from "vue";
+import { onBeforeMount, ref, computed, watch } from "vue";
 import productServices from "@/services/productServices";
 import categoryServices from "@/services/categoryServices";
+import Pagination from "@/components/user/pagination/Pagination.vue";
+import { useRoute, useRouter } from "vue-router";
 
 const products = ref([]);
 const categories = ref([]);
@@ -10,18 +12,44 @@ const searchQuery = ref("");
 const isEditModalOpen = ref(false);
 const selectedProduct = ref(null);
 const isSubmitting = ref(false);
-
+const route = useRoute();
+const router = useRouter();
+const itemsPerPage = ref(5);
+const currentPage = ref(parseInt(route.params.query) || 1);
+const totalPages = ref(0);
 // Fetch products with error handling
 const fetchProduct = async () => {
   try {
-    const response = await productServices.gets();
+    const response = await productServices.gets(
+      {
+        limit: itemsPerPage.value,
+        page: currentPage.value - 1,
+      }
+    );
     products.value = response.data.data;
+    totalPages.value = response.data.totalPage;
   } catch (error) {
     console.error("Error fetching products:", error);
     // Here you might want to add error notification
   }
 };
-
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  router.push({
+    name: "listproduct",
+    query: { ...route.query, page },
+  });
+};
+watch(
+  () => [route.query.page],
+  async ([newPage]) => {
+    if (newPage) {
+      currentPage.value = parseInt(newPage);
+      await fetchProduct();
+    }
+  },
+  { immediate: true }
+);
 // Fetch categories with error handling
 const fetchCategory = async () => {
   try {
@@ -45,6 +73,8 @@ const findcategory = (id) => {
 
 const openEditModal = (product) => {
   selectedProduct.value = { ...product };
+  selectedProduct.value.thumbnail = 'http://127.0.0.1:8088/' + selectedProduct.value.thumbnail
+  selectedProduct.value.images = selectedProduct.value.images.map(image => 'http://127.0.0.1:8088/' + image)
   isEditModalOpen.value = true;
 };
 
@@ -62,12 +92,38 @@ const handleUpdateProduct = async () => {
   }
 };
 
+const removeImage = (index) => {
+  productData.images.splice(index, 1); // Xóa phần tử khỏi mảng
+};
+
 const handleThumbnailUpload = (event) => {
+  event.stopPropagation();
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      selectedProduct.value.image = e.target.result;
+      selectedProduct.value.thumbnail = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+const MAX_IMAGES = 5; // Giới hạn số lượng ảnh
+
+const addImageField = () => {
+  if (selectedProduct.value.images.length < MAX_IMAGES) {
+    selectedProduct.value.images.push(null);
+  } else {
+    alert("You can upload up to " + MAX_IMAGES + " images only.");
+  }
+};
+const handleImagesUpload = (index, event) => {
+  event.stopPropagation();
+  const fileInput = event.target;
+  const file = fileInput.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      selectedProduct.value.images[index] = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -102,42 +158,24 @@ const filteredProducts = computed(() => {
 <template>
   <DefaultLayout>
     <div class="flex flex-col gap-10">
-      <div
-        class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
-      >
+      <div class="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
         <div class="py-6 px-2 md:px-6 xl:px-7.5">
           <div class="flex justify-between items-center mb-4">
             <h4 class="text-xl font-bold text-black dark:text-white">
               Products
             </h4>
             <div class="relative">
-              <input
-                type="text"
-                v-model="searchQuery"
-                placeholder="Search products..."
-                class="w-64 px-4 py-2 border rounded-lg focus:outline-none focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white"
-              />
+              <input type="text" v-model="searchQuery" placeholder="Search products..."
+                class="w-64 px-4 py-2 border rounded-lg focus:outline-none focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:text-white" />
               <span class="absolute right-3 top-1/2 -translate-y-1/2 mt">
-                <svg
-                  class="fill-current"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
+                <svg class="fill-current" width="16" height="16" viewBox="0 0 20 20" fill="none"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M9.16666 3.33332C5.945 3.33332 3.33332 5.945 3.33332 9.16666C3.33332 12.3883 5.945 15 9.16666 15C12.3883 15 15 12.3883 15 9.16666C15 5.945 12.3883 3.33332 9.16666 3.33332ZM1.66666 9.16666C1.66666 5.02452 5.02452 1.66666 9.16666 1.66666C13.3088 1.66666 16.6667 5.02452 16.6667 9.16666C16.6667 13.3088 13.3088 16.6667 9.16666 16.6667C5.02452 16.6667 1.66666 13.3088 1.66666 9.16666Z"
-                    fill=""
-                  />
-                  <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
+                    fill="" />
+                  <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M13.2857 13.2857C13.6112 12.9603 14.1388 12.9603 14.4642 13.2857L18.0892 16.9107C18.4147 17.2362 18.4147 17.7638 18.0892 18.0892C17.7638 18.4147 17.2362 18.4147 16.9107 18.0892L13.2857 14.4642C12.9603 14.1388 12.9603 13.6112 13.2857 13.2857Z"
-                    fill=""
-                  />
+                    fill="" />
                 </svg>
               </span>
             </div>
@@ -145,8 +183,7 @@ const filteredProducts = computed(() => {
         </div>
 
         <div
-          class="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-        >
+          class="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
           <div class="col-span-3 flex items-center">
             <p class="font-medium">Product Name</p>
           </div>
@@ -164,19 +201,13 @@ const filteredProducts = computed(() => {
           </div>
         </div>
 
-        <div
-          v-for="product in filteredProducts"
-          :key="product._id"
-          class="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-        >
+        <div v-for="product in filteredProducts" :key="product._id"
+          class="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
           <div class="col-span-3 flex items-center">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
               <div class="h-12.5 w-15 rounded-md">
-                <img
-                  :src="product.image"
-                  :alt="product.name"
-                  class="h-full w-full object-cover rounded-md"
-                />
+                <img :src="'http://127.0.0.1:8088/' + product.thumbnail" :alt="product.name"
+                  class="h-full w-full object-cover rounded-md" />
               </div>
               <p class="text-sm font-medium text-black dark:text-white">
                 {{ product.name }}
@@ -199,7 +230,7 @@ const filteredProducts = computed(() => {
             </p>
           </div>
           <div class="col-span-1 flex items-center">
-            
+
             <div class="flex items-center space-x-3.5">
               <button class="text-yellow-600 hover:text-yellow-900" @click="openEditModal(product)">
                 <svg class="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none"
@@ -223,18 +254,17 @@ const filteredProducts = computed(() => {
             </div>
           </div>
         </div>
+        <div class="w-full flex items-center justify-center">
+          <Pagination v-if="totalPages > 1" :total-page="totalPages" :current-page="currentPage" :max-visible-pages="5"
+            @page-changed="handlePageChange" />
+        </div>
       </div>
 
       <!-- Edit Modal -->
-      <div
-        v-if="isEditModalOpen && selectedProduct"
-        class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center"
-        @click="isEditModalOpen = false"
-      >
-        <div
-          class="bg-white dark:bg-boxdark w-full max-w-3xl mx-4 rounded-lg shadow-lg"
-          @click.stop
-        >
+      <div v-if="isEditModalOpen && selectedProduct"
+        class="fixed inset-0 bg-black bg-opacity-50 z-999 flex items-center justify-center"
+        @click="isEditModalOpen = false">
+        <div class="bg-white dark:bg-boxdark w-full max-w-3xl mx-4 rounded-lg shadow-lg" @click.stop>
           <div class="px-6 py-4 border-b dark:border-gray-700">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
               Edit Product
@@ -245,31 +275,18 @@ const filteredProducts = computed(() => {
               <!-- Basic Information -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="form-control">
-                  <label class="block text-sm font-medium mb-1"
-                    >Product Name</label
-                  >
-                  <input
-                    type="text"
-                    v-model="selectedProduct.name"
-                    required
+                  <label class="block text-sm font-medium mb-1">Product Name</label>
+                  <input type="text" v-model="selectedProduct.name" required
                     class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white"
-                    placeholder="Enter product name"
-                  />
+                    placeholder="Enter product name" />
                 </div>
 
                 <div class="form-control">
                   <label class="block text-sm font-medium mb-1">Category</label>
-                  <select
-                    v-model="selectedProduct.category"
-                    required
-                    class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white"
-                  >
+                  <select v-model="selectedProduct.category" required
+                    class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white">
                     <option value="" disabled>Select category</option>
-                    <option
-                      v-for="category in categories"
-                      :key="category._id"
-                      :value="category._id"
-                    >
+                    <option v-for="category in categories" :key="category._id" :value="category._id">
                       {{ category.title }}
                     </option>
                   </select>
@@ -277,102 +294,78 @@ const filteredProducts = computed(() => {
 
                 <div class="form-control">
                   <label class="block text-sm font-medium mb-1">Stock</label>
-                  <input
-                    type="number"
-                    v-model="selectedProduct.countInStock"
-                    required
-                    min="0"
+                  <input type="number" v-model="selectedProduct.countInStock" required min="0"
                     class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white"
-                    placeholder="Enter stock quantity"
-                  />
+                    placeholder="Enter stock quantity" />
                 </div>
 
                 <div class="form-control">
                   <label class="block text-sm font-medium mb-1">Price</label>
-                  <input
-                    type="number"
-                    v-model="selectedProduct.price"
-                    required
-                    min="0"
-                    step="0.01"
+                  <input type="number" v-model="selectedProduct.price" required min="0" step="0.01"
                     class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white"
-                    placeholder="Enter price"
-                  />
+                    placeholder="Enter price" />
                 </div>
               </div>
 
-              <!-- Product Image -->
+              <!-- Product Images -->
               <div class="space-y-2">
-                <label class="block text-sm font-medium">Product Image</label>
+                <label class="block text-sm font-medium">Thumbnail Image</label>
                 <div class="flex items-center space-x-4">
-                  <div
-                    class="w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center relative overflow-hidden"
-                  >
-                    <img
-                      v-if="selectedProduct.image"
-                      :src="selectedProduct.image"
-                      class="w-full h-full object-cover rounded-lg"
-                      alt="Product image"
-                    />
-                    <input
-                      type="file"
-                      @change="handleThumbnailUpload"
-                      accept="image/*"
-                      class="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                    <div
-                      v-if="!selectedProduct.image"
-                      class="text-center text-gray-500"
-                    >
-                      <svg
-                        class="mx-auto h-8 w-8 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <p class="text-sm mt-1">Upload image</p>
+                  <div class="w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center relative">
+                    <img v-if="selectedProduct.thumbnail" :src="selectedProduct.thumbnail"
+                      class="w-full h-full object-cover rounded-lg" />
+                    <input type="file" @change="handleThumbnailUpload" accept="image/*"
+                      class="absolute inset-0 opacity-0 cursor-pointer" />
+                    <div v-if="!selectedProduct.thumbnail" class="text-center text-gray-500">
+                      <i class="fas fa-upload mb-2"></i>
+                      <p class="text-sm">Upload image</p>
                     </div>
                   </div>
                 </div>
               </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium">Additional Images</label>
+                <div class="flex items-center space-x-4">
+                  <div v-for="(item, index) in selectedProduct.images" :key="index" class="relative w-32 h-32">
+                    <img v-if="item" :src="item" class="w-full h-full object-cover rounded-lg" />
+                    <input type="file" @change="(event) => handleImagesUpload(index, event)" accept="image/*"
+                      class="absolute inset-0 opacity-0 cursor-pointer" />
+                    <div v-if="!item" class="text-center text-gray-500">
+                      <i class="fas fa-upload mb-2"></i>
+                      <p class="text-sm">Upload image</p>
+                    </div>
+                    <!-- Nút xóa ảnh -->
+                    <button @click="removeImage(index)"
+                      class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1">
+                      <font-awesome-icon icon="trash" />
+                    </button>
+                  </div>
+
+                </div>
+                <button v-if="selectedProduct.images.length < MAX_IMAGES" @click="addImageField"
+                  class="mt-4 text-blue-500">
+                  Add another image
+                </button>
+              </div>
 
               <!-- Product Description -->
               <div class="form-control">
-                <label class="block text-sm font-medium mb-1"
-                  >Description</label
-                >
-                <textarea
-                  v-model="selectedProduct.description"
-                  rows="4"
+                <label class="block text-sm font-medium mb-1">Description</label>
+                <textarea v-model="selectedProduct.description" rows="4"
                   class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white"
-                  placeholder="Enter product description"
-                ></textarea>
+                  placeholder="Enter product description"></textarea>
               </div>
             </div>
           </div>
 
           <!-- Modal Footer -->
-          <div
-            class="px-6 py-4 border-t dark:border-gray-700 flex justify-end space-x-4"
-          >
-            <button
-              @click="isEditModalOpen = false"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-meta-4 dark:text-white dark:border-strokedark"
-            >
+          <div class="px-6 py-4 border-t dark:border-gray-700 flex justify-end space-x-4">
+            <button @click="isEditModalOpen = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-meta-4 dark:text-white dark:border-strokedark">
               Cancel
             </button>
-            <button
-              @click="handleUpdateProduct"
-              :disabled="isSubmitting"
-              class="px-6 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <button @click="handleUpdateProduct" :disabled="isSubmitting"
+              class="px-6 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
               {{ isSubmitting ? "Saving..." : "Save Changes" }}
             </button>
           </div>

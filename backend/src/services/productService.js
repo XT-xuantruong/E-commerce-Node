@@ -94,59 +94,46 @@ const deleteProduct = (id) => {
 const getAllProduct = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log("f", filter);
+      console.log("Filter:", filter);
+      console.log("Sort:", sort);
 
-      const totalProduct = await Product.estimatedDocumentCount();
-      if (filter) {
+      // Tạo query mặc định
+      let query = {};
+      if (Array.isArray(filter) && filter.length === 2) {
         const [field, value] = filter;
-
-        const query =
+        query =
           field === "category"
             ? { [field]: value }
             : { [field]: { $regex: value, $options: "i" } };
-        const allProductFilter = await Product.find(query)
-          .limit(limit)
-          .skip(page * limit);
-
-        const totalProductFilter = await Product.countDocuments(query);
-
-        resolve({
-          status: "ok",
-          messsage: "Get all successfully",
-          totalProduct: totalProductFilter,
-          pageCurent: Number(page + 1),
-          totalPage: Math.ceil(totalProductFilter / limit),
-          data: allProductFilter,
-        });
       }
-      if (sort) {
-        const objectSort = {};
+
+      // Tạo object sort mặc định
+      let objectSort = {};
+      if (Array.isArray(sort) && sort.length === 2) {
         objectSort[sort[1]] = sort[0];
-        const allProductSort = await Product.find()
-          .limit(limit)
-          .skip(page * limit)
-          .sort(objectSort);
-
-        resolve({
-          status: "ok",
-          messsage: "Get all successfully",
-          totalProduct: totalProduct,
-          pageCurent: Number(page + 1),
-          totalPage: Math.ceil(totalProduct / limit),
-          data: allProductSort,
-        });
       }
-      const all = await Product.find()
+
+      // Lấy danh sách sản phẩm
+      const allProducts = await Product.find(query)
+        .sort(objectSort) // Áp dụng sort nếu có
         .limit(limit)
         .skip(page * limit);
 
+      // Tổng số sản phẩm theo query
+      const totalProductFiltered = await Product.countDocuments(query);
+
+      // Tổng số sản phẩm trong cơ sở dữ liệu
+      const totalProduct = await Product.estimatedDocumentCount();
+
       resolve({
         status: "ok",
-        messsage: "Get all successfully",
-        totalProduct: totalProduct,
-        pageCurent: Number(page + 1),
-        totalPage: Math.ceil(totalProduct / limit),
-        data: all,
+        message: "Get all successfully",
+        totalProduct: filter ? totalProductFiltered : totalProduct,
+        pageCurrent: Number(page + 1),
+        totalPage: Math.ceil(
+          (filter ? totalProductFiltered : totalProduct) / limit
+        ),
+        data: allProducts,
       });
     } catch (e) {
       reject(e);

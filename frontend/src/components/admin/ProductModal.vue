@@ -77,18 +77,25 @@
             <div class="space-y-2">
               <label class="block text-sm font-medium">Additional Images</label>
               <div class="flex items-center space-x-4">
-                <div v-for="(item, index) in productData.images" :key="index"
-                  class="w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center relative">
+                <div v-for="(item, index) in productData.images" :key="index" class="relative w-32 h-32">
                   <img v-if="item" :src="item" class="w-full h-full object-cover rounded-lg" />
-                  <input type="file" @change="handleImagesUpload(index)" accept="image/*"
+                  <input type="file" @change="(event) => handleImagesUpload(index, event)" accept="image/*"
                     class="absolute inset-0 opacity-0 cursor-pointer" />
                   <div v-if="!item" class="text-center text-gray-500">
                     <i class="fas fa-upload mb-2"></i>
                     <p class="text-sm">Upload image</p>
                   </div>
+                  <!-- Nút xóa ảnh -->
+                  <button @click="removeImage(index)"
+                    class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1">
+                    <font-awesome-icon icon="trash" />
+                  </button>
                 </div>
+
               </div>
-              <button @click="addImageField" class="mt-4 text-blue-500">Add another image</button>
+              <button v-if="productData.images.length < MAX_IMAGES" @click="addImageField" class="mt-4 text-blue-500">
+                Add another image
+              </button>
             </div>
 
             <!-- Product Description -->
@@ -158,8 +165,12 @@ const resetForm = () => {
     description: "",
   });
 };
+const removeImage = (index) => {
+  productData.images.splice(index, 1); // Xóa phần tử khỏi mảng
+};
 
 const handleThumbnailUpload = (event) => {
+  event.stopPropagation();
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
@@ -169,21 +180,28 @@ const handleThumbnailUpload = (event) => {
     reader.readAsDataURL(file);
   }
 };
+const MAX_IMAGES = 5; // Giới hạn số lượng ảnh
+
 const addImageField = () => {
-  // Thêm một phần tử null mới vào mảng để tạo thêm trường upload
-  productData.images.push(null);
-}
-const handleImagesUpload = (index) => {
+  if (productData.images.length < MAX_IMAGES) {
+    productData.images.push(null);
+  } else {
+    alert("You can upload up to " + MAX_IMAGES + " images only.");
+  }
+};
+const handleImagesUpload = (index, event) => {
+  event.stopPropagation();
   const fileInput = event.target;
   const file = fileInput.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      productData.images[index] = e.target.result; // Cập nhật ảnh vào mảng tại vị trí tương ứng
+      productData.images[index] = e.target.result;
     };
     reader.readAsDataURL(file);
   }
 };
+
 
 const handleSubmit = async () => {
   try {

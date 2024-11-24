@@ -112,7 +112,7 @@ const filterOptions = ref({
     starRating: null,
 });
 
-// API calls
+//API calls
 const fetchCategory = async () => {
     try {
         const response = await categoryServices.gets({
@@ -134,7 +134,6 @@ const fetchProducts = async () => {
             limit: itemsPerPage.value,
             page: currentPage.value - 1,
             filter: ["category", category.value._id],
-            ...filterOptions.value,
             sort: sortOrder.value
         });
 

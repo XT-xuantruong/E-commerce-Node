@@ -11,11 +11,11 @@
                 <div class="w-1/2">
                     <h1 class="text-4xl font-bold text-black">{{ item.name }}</h1>
                     <p class="text-2xl mt-4 line-through text-red-500">${{ item.price }}</p>
-                    <p class="text-2xl mt-4 text-yellow-600">${{ calculateDiscountedPrice(item.price,
-                        item.discount).toFixed(2) }}</p>
+                    <!-- <p class="text-2xl mt-4 text-yellow-600">${{ calculateDiscountedPrice(item.price,
+                        item.discount).toFixed(2) }}</p> -->
 
                     <!-- Dynamic Rating Display -->
-                    <div class="mt-4">
+                    <!-- <div class="mt-4">
                         <span class="font-bold">Rating:</span>
                         <span class="text-yellow-500">
                             <span v-for="star in fullStars" :key="'full' + star">★</span>
@@ -23,7 +23,7 @@
                             <span v-for="star in emptyStars" :key="'empty' + star">☆</span>
                         </span>
                         {{ item.rating }}
-                    </div>
+                    </div> -->
 
                     <!-- Quantity Selector -->
                     <div class="flex items-center rounded product-qty">
@@ -84,26 +84,31 @@
     </DefaultLayout>
 </template>
 <script setup>
-import { computed, defineProps, ref } from "vue";
+import { computed, defineProps, onBeforeMount, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import DefaultLayout from "@/layouts/user/DefaultLayout.vue";
 import ImageGallery from "@/components/user/slider/ImageGallery.vue";
-import products from "@/faker/product";
 import { useCartStore } from "@/stores/cart";
+import productServices from "@/services/productServices";
 
 const route = useRoute();
 const router = useRouter();
 const cartStore = useCartStore();
 const quantity = ref(1);
 
-let item = ref({
-    name: null,
-    price: null,
-    rating: null,
-    image: null,
-    description: null,
-});
-item = products.find((p) => p.id == route.params.id);
+let item = ref({});
+const fetchProduct = async () => {
+    await productServices.get(route.params.id)
+        .then(response => {
+            item.value = response.data.data
+        })
+        .catch(error => {
+            console.error(error)
+        })
+}
+onBeforeMount(
+    fetchProduct
+)
 
 const calculateDiscountedPrice = (price, discount) => {
     return price * (1 - discount / 100);

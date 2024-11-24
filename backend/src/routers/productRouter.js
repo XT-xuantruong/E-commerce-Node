@@ -2,17 +2,19 @@ const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/productController");
 const { authMiddleware } = require("../middleware/authMiddleware");
-const {
-  uploadFiles,
-  uploadSingleImage,
-} = require("../middleware/uploadMiddleware");
+const { uploadProductImages } = require("../middleware/uploadMiddleware");
 router.get("/", productController.getAllProduct);
 router.get("/:id", productController.getDetailProduct);
-router.post("/", authMiddleware, uploadFiles, productController.createProduct);
+router.post(
+  "/",
+  authMiddleware,
+  uploadProductImages,
+  productController.createProduct
+);
 router.put(
   "/:id",
   authMiddleware,
-  uploadFiles,
+  uploadProductImages,
   productController.updateProduct
 );
 router.delete("/:id", authMiddleware, productController.deleteProduct);
