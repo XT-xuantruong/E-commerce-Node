@@ -1,21 +1,26 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import { useRouter } from 'vue-router'
 import { useCartStore } from "@/stores/cart";
 import DefaultLayout from "@/layouts/user/DefaultLayout.vue";
+import categoryServices from "@/services/categoryServices";
+import { useOrderStore } from "@/stores/order";
 const router = useRouter()
 const cartStore = useCartStore();
-
+const orderStore = useOrderStore();
 // Computed values for order summary
 const subtotal = computed(() => cartStore.totalPrice);
-const shipping = computed(() => (cartStore.totalItems > 0 ? 5.0 : 0));
+const shipping = ref(30000);
 const tax = computed(() => subtotal.value * 0.05);
 const total = computed(() => subtotal.value + shipping.value + tax.value);
-const totalSavings = computed(() => cartStore.totalSavings);
 
 // Cart item actions
 const updateItemQuantity = (item, newQuantity) => {
-    cartStore.updateQuantity(item.id, newQuantity);
+    console.log("up" + item);
+    console.log("q" + newQuantity);
+
+
+    cartStore.updateQuantity(item._id, newQuantity);
 };
 
 const removeFromCart = (itemId) => {
@@ -28,8 +33,34 @@ const calculateDiscountedPrice = (price, discount) => {
 
 const proceedToCheckout = () => {
     console.log("Proceeding to checkout with items:", cartStore.items);
+    orderStore.addItems(cartStore.items)
     router.push("/checkout")
 };
+const categories = ref([])
+const fetchCategory = async () => {
+    await categoryServices
+        .gets()
+        .then((response) => {
+            categories.value = response.data.data;
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+};
+onBeforeMount(() => {
+    fetchCategory();
+});
+
+const findcategory = (id) => {
+    return categories.value.find((c) => c._id == id)?.title;
+};
+function formatVND(amount) {
+    if (isNaN(amount)) {
+        throw new Error("Invalid input: Amount must be a number");
+    }
+
+    return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+}
 </script>
 
 <template>
@@ -55,40 +86,32 @@ const proceedToCheckout = () => {
                                 <tr v-for="item in cartStore.items" :key="item.id" class="border-b">
                                     <td class="py-4">
                                         <div class="flex items-center">
-                                            <img :src="item.thumbnail" :alt="item.name"
+                                            <img :src="'http://127.0.0.1:8088/' + item.thumbnail" :alt="item.name"
                                                 class="w-16 h-16 object-cover rounded mr-4" />
                                             <div>
                                                 <h2 class="text-lg font-bold">{{ item.name }}</h2>
                                                 <p class="text-gray-600">
-                                                    Category: {{ item.category }}
+                                                    Category: {{ findcategory(item.category) }}
                                                 </p>
-                                                <div class="flex items-center mt-1">
-                                                    <font-awesome-icon icon="star" class="text-amber-300" />
-                                                    <span class="ml-1 text-sm text-gray-600">{{
-                                                        item.rating
-                                                        }}</span>
-                                                    <span class="ml-2 text-sm text-gray-500">{{
-                                                        item.unit
-                                                        }}</span>
-                                                </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="py-4">
                                         <div>
                                             <p class="text-lg font-semibold">
-                                                ${{
+                                                {{ formatVND(item.price) }}
+                                                <!-- ${{
                                                     calculateDiscountedPrice(
                                                         item.price,
                                                         item.discount
                                                     ).toFixed(2)
-                                                }}
+                                                }} -->
                                             </p>
-                                            <p v-if="item.discount" class="text-sm">
+                                            <!-- <p v-if="item.discount" class="text-sm">
                                                 <span class="line-through text-gray-500">${{ item.price.toFixed(2)
                                                     }}</span>
                                                 <span class="ml-2 text-green-600">-{{ item.discount }}%</span>
-                                            </p>
+                                            </p> -->
                                         </div>
                                     </td>
                                     <td class="py-4">
@@ -108,15 +131,10 @@ const proceedToCheckout = () => {
                                         </div>
                                     </td>
                                     <td class="py-4 font-semibold">
-                                        ${{
-                                            (
-                                                calculateDiscountedPrice(item.price, item.discount) *
-                                                item.quantity
-                                            ).toFixed(2)
-                                        }}
+                                        {{ formatVND(item.price * item.quantity) }}
                                     </td>
                                     <td class="py-4">
-                                        <button @click="removeFromCart(item.id)"
+                                        <button @click="removeFromCart(item._id)"
                                             class="text-red-500 hover:text-red-700">
                                             <font-awesome-icon icon="trash" />
                                         </button>
@@ -137,24 +155,20 @@ const proceedToCheckout = () => {
                         <div class="space-y-3">
                             <div class="flex justify-between">
                                 <p class="text-gray-600">Subtotal</p>
-                                <p class="text-gray-600">${{ subtotal.toFixed(2) }}</p>
+                                <p class="text-gray-600">{{ formatVND(subtotal) }}</p>
                             </div>
                             <div class="flex justify-between">
                                 <p class="text-gray-600">Shipping</p>
-                                <p class="text-gray-600">${{ shipping.toFixed(2) }}</p>
+                                <p class="text-gray-600">{{ formatVND(shipping) }}</p>
                             </div>
                             <div class="flex justify-between">
                                 <p class="text-gray-600">Tax (5%)</p>
-                                <p class="text-gray-600">${{ tax.toFixed(2) }}</p>
-                            </div>
-                            <div v-if="totalSavings > 0" class="flex justify-between text-green-600">
-                                <p>Total Savings</p>
-                                <p>-${{ totalSavings.toFixed(2) }}</p>
+                                <p class="text-gray-600">{{ formatVND(tax) }}</p>
                             </div>
                             <div class="pt-3 border-t">
                                 <div class="flex justify-between text-lg font-bold">
                                     <p>Total</p>
-                                    <p>${{ total.toFixed(2) }}</p>
+                                    <p>{{ formatVND(total) }}</p>
                                 </div>
                             </div>
                         </div>

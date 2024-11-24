@@ -20,18 +20,7 @@ const oderSchema = new mongoose.Schema(
       address: { type: String, required: true },
       city: { type: String, required: true },
       country: { type: String, required: true },
-      phone: {
-        type: Number,
-        required: true,
-        validate: {
-          validate: {
-            validator: function (value) {
-              return /^\d{10}$/.test(value);
-            },
-            message: "Invalid phone number format",
-          },
-        },
-      },
+      phone: { type: Number, required: true },
     },
     paymentMethod: { type: String, required: true },
     itemsPrice: { type: Number, required: true },
@@ -39,16 +28,12 @@ const oderSchema = new mongoose.Schema(
     taxPrice: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
     orderStatus: { type: String, default: "Pending" },
-    createdAt: { type: Date, default: Date.now },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    isPaid: { type: Boolean, default: false },
     paidAt: { type: Date },
-    isDelivered: { type: Boolean, default: false },
-    deliveredAt: { type: Date },
   },
   {
     timestamps: true,

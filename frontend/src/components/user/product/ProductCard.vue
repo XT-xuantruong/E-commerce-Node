@@ -51,8 +51,9 @@ import { ref } from "vue";
 import { RouterLink } from "vue-router";
 import { useCartStore } from "@/stores/cart";
 import { defineProps } from "vue";
+import { useUserStore } from "@/stores/user";
 const cartStore = useCartStore();
-
+const userStore = useUserStore()
 const props = defineProps({
     item: {
         type: Object,
@@ -88,12 +89,10 @@ const handleAddToCart = () => {
     const data = {
         ...props.item,
         quantity: quantity.value,
-        user: {
-            id: 1,
-            name: "John Doe",
-            email: "john.doe@example.com",
-        },
+        user: userStore.user.id,
     };
+    console.log(data);
+
     cartStore.addItem(data);
 };
 </script>

@@ -1,52 +1,53 @@
-import { ref, computed, watch } from "vue";
 import { defineStore } from "pinia";
 
-export const useCartStore = defineStore("cart", () => {
-  // Retrieve items from localStorage or initialize an empty array
-  const items = ref(JSON.parse(localStorage.getItem("cartItems")) || []);
-
-  // Computed property to get the total price
-  const totalPrice = computed(() =>
-    items.value.reduce((total, item) => total + item.price * item.quantity, 0)
-  );
-
-  // Add item to the cart
-  function addItem(newItem) {
-    const existingItem = items.value.find((item) => item.id === newItem.id);
-    if (existingItem) {
-      existingItem.quantity += newItem.quantity;
-    } else {
-      items.value.push({ ...newItem, quantity: newItem.quantity || 1 });
-    }
-  }
-
-  function updateQuantity(itemId, quantity) {
-    const item = items.value.find((item) => item.id === itemId);
-    if (item) {
-      item.quantity = Math.max(0, quantity);
-      if (item.quantity === 0) {
-        removeItem(itemId);
-      }
-    }
-  }
-  // Remove item from the cart by ID
-  function removeItem(itemId) {
-    items.value = items.value.filter((item) => item.id !== itemId);
-  }
-
-  // Clear the cart
-  function clearCart() {
-    items.value = [];
-  }
-
-  // Watch for changes to the cart items and update localStorage
-  watch(
-    items,
-    (newItems) => {
-      localStorage.setItem("cartItems", JSON.stringify(newItems));
+export const useCartStore = defineStore("cart", {
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        key: "cart",
+        storage: localStorage,
+      },
+    ],
+  },
+  state: () => ({
+    items: [],
+  }),
+  getters: {
+    totalPrice(state) {
+      return state.items.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      );
     },
-    { deep: true }
-  );
+  },
+  actions: {
+    addItem(newItem) {
+      const existingItem = this.items.find((item) => item._id == newItem._id);
 
-  return { items, totalPrice, updateQuantity, addItem, removeItem, clearCart };
+      if (existingItem) {
+        existingItem.quantity += newItem.quantity || 1;
+      } else {
+        this.items.push({ ...newItem, quantity: newItem.quantity || 1 });
+      }
+    },
+    updateQuantity(itemId, quantity) {
+      console.log(itemId + " " + quantity);
+
+      const item = this.items.find((item) => item._id === itemId);
+      if (item) {
+        item.quantity = Math.max(0, quantity);
+        if (item.quantity === 0) {
+          this.removeItem(itemId);
+        }
+      }
+    },
+
+    removeItem(itemId) {
+      this.items = this.items.filter((item) => item._id !== itemId);
+    },
+    clearCart() {
+      this.items = [];
+    },
+  },
 });
