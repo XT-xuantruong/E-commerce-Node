@@ -2,22 +2,32 @@ const userService = require("../services/userService");
 const orderService = require("../services/orderService");
 const jwtService = require("../services/jwtService");
 
-const orderUser = async (req, res) => {
+const createOrder = async (req, res) => {
   try {
-    let userData;
-
-    const contentType = req.headers["content-type"];
-
-    if (contentType.includes("application/json")) {
-      userData = req.body;
-    } else if (contentType.includes("multipart/form-data")) {
-      userData = req.fields;
+    let orderData;
+    orderData = req.body;
+    if (
+      !orderData.orderItems ||
+      !orderData.shippingAddress ||
+      !orderData.itemsPrice ||
+      !orderData.shippingPrice ||
+      !orderData.taxPrice ||
+      !orderData.totalPrice ||
+      !orderData.user
+    ) {
+      return res.status(200).json({
+        status: "ERR",
+        message: "The input is required",
+      });
     }
-    const response = await orderService.createOrder(req.body);
+    // if (orderData.orderStatus === "COMPLETED") {
+    //   orderData.orderStatus === "COMPLETED";
+    // }
+    const response = await orderService.createOrder(orderData);
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
-      message: e,
+      message: e.message,
     });
   }
 };
@@ -122,10 +132,8 @@ const getDetailUser = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
-  orderUser,
+  createOrder,
   loginUser,
   updateUser,
   deleteUser,

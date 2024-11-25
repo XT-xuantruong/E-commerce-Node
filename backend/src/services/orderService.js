@@ -1,8 +1,6 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 
-// const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
-
 const createOrder = (orderData) => {
   console.log(orderData);
 
@@ -16,10 +14,9 @@ const createOrder = (orderData) => {
           return {
             name: product.name,
             amount: item.quantity,
-            image: item.image,
-            price: product.price,
+            image: item.thumbnail,
+            price: item.price,
             product: product._id,
-            priceAtOrder: product.price,
           };
         })
       );
@@ -32,7 +29,7 @@ const createOrder = (orderData) => {
         taxPrice: orderData.taxPrice,
         totalPrice: orderData.totalPrice,
         user: orderData.user,
-        orderStatus: "Pending",
+        orderStatus: orderData.orderStatus,
       });
 
       const savedOrder = await order.save();
