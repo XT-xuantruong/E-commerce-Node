@@ -42,11 +42,7 @@ const handleDelete = order => {
       <table class="w-full table-auto">
         <thead>
           <tr class="bg-gray-2 text-left dark:bg-meta-4">
-            <th
-              class="min-w-[150px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11"
-            >
-              Order ID
-            </th>
+           
             <th
               class="min-w-[180px] py-4 px-4 font-medium text-black dark:text-white"
             >
@@ -60,7 +56,7 @@ const handleDelete = order => {
             <th
               class="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white"
             >
-              Total Amount
+              Total Price
             </th>
             <th
               class="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white"
@@ -74,25 +70,21 @@ const handleDelete = order => {
         </thead>
         <tbody>
           <tr v-for="order in orders" :key="order.id">
-            <td class="py-5 px-4 pl-9 xl:pl-11">
-              <h5 class="font-medium text-black dark:text-white">
-                {{ order.id }}
-              </h5>
+           
+            <td class="py-5 px-4">
+              <p class="text-black dark:text-white">{{ order.user }}</p>
             </td>
             <td class="py-5 px-4">
-              <p class="text-black dark:text-white">{{ order.customerName }}</p>
-            </td>
-            <td class="py-5 px-4">
-              <p class="text-black dark:text-white">{{ order.orderDate }}</p>
+              <p class="text-black dark:text-white">{{ order.createdAt }}</p>
             </td>
             <td class="py-5 px-4">
               <p class="text-black dark:text-white">
-                {{ formatCurrency(order.total) }}
+                {{ formatCurrency(order.totalPrice) }}
               </p>
             </td>
             <td class="py-5 px-4">
               <select
-                v-model="order.status"
+                v-model="order.orderStatus"
                 @change="handleStatusChange(order)"
                 class="rounded-md border-stroke bg-transparent py-1.5 px-3 outline-none transition-all dark:border-strokedark"
               >
@@ -100,6 +92,7 @@ const handleDelete = order => {
                   v-for="status in orderStatuses"
                   :key="status.value"
                   :value="status.value"
+                  :selected="order.orderStatus === status.value"
                 >
                   {{ status.label }}
                 </option>

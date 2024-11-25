@@ -64,6 +64,8 @@ const updateOrder = (id, status) => {
   return new Promise(async (resolve, reject) => {
     try {
       const checkOrder = await Order.findOne({ _id: id });
+      console.log('order', checkOrder);
+      
 
       if (checkOrder === null) {
         resolve({
@@ -122,46 +124,25 @@ const deleteOrder = (id) => {
 const getAllOrder = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
-      console.log("Filter:", filter);
-      console.log("Sort:", sort);
-
-      // Tạo query mặc định
-      let query = {};
-      if (Array.isArray(filter) && filter.length === 2) {
-        const [field, value] = filter;
-        query =
-          field === "category"
-            ? { [field]: value }
-            : { [field]: { $regex: value, $options: "i" } };
-      }
-
-      // Tạo object sort mặc định
-      let objectSort = {};
-      if (Array.isArray(sort) && sort.length === 2) {
-        objectSort[sort[1]] = sort[0];
-      }
+   
 
       // Lấy danh sách sản phẩm
-      const allProducts = await Product.find(query)
-        .sort(objectSort) // Áp dụng sort nếu có
+      const allOrders = await Order.find()
         .limit(limit)
         .skip(page * limit);
 
-      // Tổng số sản phẩm theo query
-      const totalProductFiltered = await Order.countDocuments(query);
-
       // Tổng số sản phẩm trong cơ sở dữ liệu
-      const totalProduct = await Order.estimatedDocumentCount();
+      const totalOrder = await Order.estimatedDocumentCount();
 
       resolve({
         status: "ok",
         message: "Get all successfully",
-        totalProduct: filter ? totalProductFiltered : totalProduct,
+        totalOrder:  totalOrder,
         pageCurrent: Number(page + 1),
         totalPage: Math.ceil(
-          (filter ? totalProductFiltered : totalProduct) / limit
+          (totalOrder) / limit
         ),
-        data: allProducts,
+        data: allOrders,
       });
     } catch (e) {
       reject(e);

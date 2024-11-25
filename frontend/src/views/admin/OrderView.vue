@@ -1,129 +1,99 @@
 <script setup>
-import { ref } from 'vue'
-import DefaultLayout from '@/layouts/admin/DefaultLayout.vue'
-import TableOrder from '@/components/admin/Tables/TableOrder.vue'
+import { onBeforeMount, ref } from "vue";
+import DefaultLayout from "@/layouts/admin/DefaultLayout.vue";
+import TableOrder from "@/components/admin/Tables/TableOrder.vue";
+import orderServices from "@/services/orderServices";
 
-import ExportReceipt from '@/components/admin/ExportReceipt.vue'
-
-const orders = ref([
-  {
-    id: 'ORD001',
-    customerName: 'John Doe',
-    orderDate: '2024-11-02',
-    total: 1500000,
-    status: 'pending',
-    exportDate: new Date(),
-    customerAddress: 'Customer Address',
-    receiver: 'John Smith',
-    reason: 'Export to customer',
-    items: [
-      { id: 1, code: 'P001', name: 'T-Shirt', price: 300000, quantity: 2 },
-      { id: 2, code: 'P002', name: 'Jeans', price: 900000, quantity: 1 },
-    ],
-  },
-  {
-    id: 'ORD002',
-    customerName: 'Jane Smith',
-    orderDate: '2024-11-02',
-    total: 2000000,
-    status: 'completed',
-    exportDate: new Date(),
-    customerAddress: 'Customer Address',
-    receiver: 'John Smith',
-    reason: 'Export to customer',
-    items: [
-      {
-        id: 3,
-        code: 'P003',
-        name: 'Sports Shoes',
-        price: 2000000,
-        quantity: 1,
-      },
-    ],
-  },
-])
+const orders = ref([]);
 
 const orderStatuses = ref([
-  { value: 'pending', label: 'Pending' },
-  { value: 'processing', label: 'Processing' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-])
+  { value: "Pending", label: "Pending" },
+  { value: "Paid", label: "Paid" },
+  { value: "Cancelled", label: "Cancelled" },
+]);
 
-const selectedOrder = ref(null)
-const showModal = ref(false)
-const showDeleteModal = ref(false)
-const orderToDelete = ref(null)
+const selectedOrder = ref(null);
+const showModal = ref(false);
+const showDeleteModal = ref(false);
+const orderToDelete = ref(null);
 
 // Methods
-const formatCurrency = amount => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(amount)
-}
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+};
 
-const handleViewDetails = order => {
-  selectedOrder.value = { ...order }
-  showModal.value = true
-}
+const handleViewDetails = (order) => {
+  selectedOrder.value = { ...order };
+  showModal.value = true;
+};
 
 const closeModal = () => {
-  showModal.value = false
-  selectedOrder.value = null
-}
+  showModal.value = false;
+  selectedOrder.value = null;
+};
 
-const handleDeleteClick = order => {
-  orderToDelete.value = order
-  showDeleteModal.value = true
-}
+const handleDeleteClick = (order) => {
+  orderToDelete.value = order;
+  showDeleteModal.value = true;
+};
 
 const deleteOrder = async () => {
   try {
-    // Call API to delete order
-    // await axios.delete(`/api/orders/${orderToDelete.value.id}`)
-
+    await orderServices.delete(orderToDelete.value._id)
+  
     // Update UI
     orders.value = orders.value.filter(
-      order => order.id !== orderToDelete.value.id,
-    )
+      (order) => order._id !== orderToDelete.value._id
+    );
 
     // Close modal
-    cancelDelete()
+    cancelDelete();
 
     // Show success message
-    alert('Order deleted successfully')
+    alert("Order deleted successfully");
   } catch (error) {
-    console.error('Error deleting order:', error)
-    alert('Error occurred while deleting order')
+    console.error("Error deleting order:", error);
+    alert("Error occurred while deleting order");
   }
-}
+};
 
 const cancelDelete = () => {
-  showDeleteModal.value = false
-  orderToDelete.value = null
-}
+  showDeleteModal.value = false;
+  orderToDelete.value = null;
+};
+console.log(orders.value);
 
-const updateOrderStatus = async order => {
+
+const updateOrderStatus = async (order) => {
   try {
-    // Call API to update status
-    // await axios.patch(`/api/orders/${order.id}`, {
-    //   status: order.status
-    // })
+    console.log(orders.value, order._id);
+    
+    await orderServices.update({"orderStatus": order.orderStatus, "id": order._id})
 
     // Update UI
-    const index = orders.value.findIndex(o => o.id === order.id)
+    const index = orders.value.findIndex((o) => {console.log("l");
+     o._id === order._id});
     if (index !== -1) {
-      orders.value[index] = { ...order }
+      orders.value[index] = { ...order };
     }
 
-    // Show success message
-    alert('Status updated successfully')
+    alert("Status updated successfully");
   } catch (error) {
-    console.error('Error updating status:', error)
-    alert('Error occurred while updating status')
+    console.error("Error updating status:", error);
+    alert("Error occurred while updating status");
   }
-}
+};
+
+onBeforeMount(async () => {
+  await orderServices.gets().then((response) => {    
+    orders.value = response.data.data;
+
+  })
+})
+
 </script>
 
 <template>
@@ -151,7 +121,7 @@ const updateOrderStatus = async order => {
         >
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium">
-              Order Details - {{ selectedOrder?.id }}
+              Order Details - 
             </h3>
             <button
               @click="closeModal"
@@ -166,16 +136,16 @@ const updateOrderStatus = async order => {
             <div class="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <p class="font-semibold">Customer:</p>
-                <p>{{ selectedOrder.customerName }}</p>
+                <p>{{ selectedOrder.user }}</p>
               </div>
               <div>
                 <p class="font-semibold">Order Date:</p>
-                <p>{{ selectedOrder.orderDate }}</p>
+                <p>{{ selectedOrder.createdAt }}</p>
               </div>
               <div>
                 <p class="font-semibold">Status:</p>
                 <select
-                  v-model="selectedOrder.status"
+                  v-model="selectedOrder.orderStatus"
                   @change="updateOrderStatus(selectedOrder)"
                   class="mt-1 text-sm rounded-md dark:border-strokedark dark:bg-boxdark border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
@@ -183,6 +153,7 @@ const updateOrderStatus = async order => {
                     v-for="status in orderStatuses"
                     :key="status.value"
                     :value="status.value"
+                    :selected="selectedOrder.orderStatus === status.value"
                   >
                     {{ status.label }}
                   </option>
@@ -190,7 +161,15 @@ const updateOrderStatus = async order => {
               </div>
               <div>
                 <p class="font-semibold">Total Amount:</p>
-                <p>{{ formatCurrency(selectedOrder.total) }}</p>
+                <p>{{ formatCurrency(selectedOrder.totalPrice) }}</p>
+              </div>
+              <div>
+                <p class="font-semibold">Shipping price:</p>
+                <p>{{ formatCurrency(selectedOrder.shippingPrice) }}</p>
+              </div>
+              <div>
+                <p class="font-semibold">Tax price:</p>
+                <p>{{ formatCurrency(selectedOrder.taxPrice) }}</p>
               </div>
             </div>
 
@@ -224,31 +203,27 @@ const updateOrderStatus = async order => {
                     >
                       Subtotal
                     </th>
+                    
                   </tr>
                 </thead>
                 <tbody
                   class="bg-white dark:text-white divide-y dark:border-strokedark dark:bg-boxdark divide-gray-200"
                 >
-                  <tr v-for="item in selectedOrder.items" :key="item.id">
+                  <tr v-for="item in selectedOrder.orderItems" :key="item.id">
                     <td class="px-6 py-4 whitespace-nowrap">{{ item.name }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      {{ item.quantity }}
+                      {{ item.amount }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       {{ formatCurrency(item.price) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      {{ formatCurrency(item.price * item.quantity) }}
+                      {{ formatCurrency(item.price * item.amount) }}
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </div>
-          <div class="mt-6">
-            <h3 class="text-lg font-medium mb-3">Export Receipt Preview</h3>
-
-            <ExportReceipt :selectedOrder="selectedOrder" />
           </div>
         </div>
       </div>
@@ -267,7 +242,7 @@ const updateOrderStatus = async order => {
             </h3>
             <div class="mt-2 px-7 py-3">
               <p class="text-sm text-gray-500">
-                Are you sure you want to delete order {{ orderToDelete?.id }}?
+                Are you sure you want to delete order ?
               </p>
             </div>
             <div class="items-center px-4 py-3">

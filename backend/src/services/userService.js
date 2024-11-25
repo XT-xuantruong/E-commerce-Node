@@ -7,7 +7,7 @@ const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
 
 const createUser = (newUser) => {
   return new Promise(async (resolve, reject) => {
-    const { name, email, password, phone } = newUser;
+    const { name, email, password, phone, isAdmin } = newUser;
 
     try {
       const checkUser = await User.findOne({ email: email });
@@ -27,6 +27,7 @@ const createUser = (newUser) => {
         email,
         password: hashedPassword,
         phone,
+        isAdmin: isAdmin ? true : false,
       });
 
       if (createdUser) {
@@ -65,13 +66,16 @@ const loginUser = (newUser) => {
         });
       }
 
+      console.log("problem", checkUser);
+      
+
       const access_token = await genneralAccessToken({
-        id: checkUser.id,
+        id: checkUser._id,
         isAdmin: checkUser.isAdmin,
       });
 
       const refresh_token = await genneralRefreshToken({
-        id: checkUser.id,
+        id: checkUser._id,
         isAdmin: checkUser.isAdmin,
       });
 

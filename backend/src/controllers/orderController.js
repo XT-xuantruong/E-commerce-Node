@@ -32,56 +32,14 @@ const createOrder = async (req, res) => {
   }
 };
 
-const loginUser = async (req, res) => {
+const updateOrder = async (req, res) => {
   try {
-    let userData;
-
-    const contentType = req.headers["content-type"];
-    if (contentType.includes("application/json")) {
-      userData = req.body;
-    }
-
-    const { email, password } = userData;
-
-    const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
-    const isCheckEmail = reg.test(email);
-
-    if (!email || !password) {
-      return res.status(200).json({
-        status: "ERR",
-        message: "The input is required",
-      });
-    }
-    if (!isCheckEmail) {
-      return res.status(200).json({
-        status: "ERR",
-        message: "The input is email",
-      });
-    }
-
-    const response = await userService.loginUser(req.body);
-    return res.status(200).json(response);
-  } catch (e) {
-    return res.status(404).json({
-      message: e,
-    });
-  }
-};
-const updateUser = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    console.log("userid: " + userId);
+    const orderId = req.params.id;
     const data = req.body;
-    if (!userId) {
-      return res.status(200).json({
-        status: "ERR",
-        message: "The input is required",
-      });
-    }
-    if (req.file) {
-      data.avatar = `/uploads/images/${req.file.filename}`;
-    }
-    const response = await userService.updateUser(userId, data);
+    console.log(data);
+    
+    
+    const response = await orderService.updateOrder(orderId, data.orderStatus);
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
@@ -90,11 +48,10 @@ const updateUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteOrder = async (req, res) => {
   try {
     const userId = req.params.id;
-    const token = req.headers;
-    const response = await userService.deleteUser(userId);
+    const response = await orderService.deleteOrder(userId);
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
@@ -103,9 +60,16 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const getAllUser = async (req, res) => {
+const getAllOrder = async (req, res) => {
   try {
-    const response = await userService.getAllUser();
+
+    
+    const { limit, page } = req.query;
+    const response = await orderService.getAllOrder(
+      Number(limit),
+      Number(page)
+    );
+
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
@@ -134,9 +98,8 @@ const getDetailUser = async (req, res) => {
 
 module.exports = {
   createOrder,
-  loginUser,
-  updateUser,
-  deleteUser,
-  getAllUser,
+  updateOrder,
+  deleteOrder,
+  getAllOrder,
   getDetailUser,
 };

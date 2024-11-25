@@ -1,9 +1,12 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const path = require("path");
+const { log } = require("console");
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const authMiddleware = (req, res, next) => {
+  console.log(req.headers.authorization);
+  
   const token =
     req.headers.authorization.split(" ")[1] ||
     req.headers.Authorization.split(" ")[1];
@@ -15,6 +18,8 @@ const authMiddleware = (req, res, next) => {
       });
     }
     const { payload } = user;
+    console.log(user);
+    
     if (payload.isAdmin) {
       next();
     } else {
