@@ -67,7 +67,6 @@ const loginUser = (newUser) => {
       }
 
       console.log("problem", checkUser);
-      
 
       const access_token = await genneralAccessToken({
         id: checkUser._id,

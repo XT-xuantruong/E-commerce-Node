@@ -5,8 +5,8 @@ const { log } = require("console");
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const authMiddleware = (req, res, next) => {
-  console.log(req.headers.authorization);
-  
+  // console.log(req.headers.authorization);
+
   const token =
     req.headers.authorization.split(" ")[1] ||
     req.headers.Authorization.split(" ")[1];
@@ -18,12 +18,12 @@ const authMiddleware = (req, res, next) => {
       });
     }
     const { payload } = user;
-    console.log(user);
-    
+    // console.log(user);
+
     if (payload.isAdmin) {
       next();
     } else {
-      console.log('long');
+      // console.log('long');
       return res.status(401).json({
         message: "The authentication",
         status: "ERROR",
@@ -33,12 +33,14 @@ const authMiddleware = (req, res, next) => {
 };
 
 const authUserMiddleware = (req, res, next) => {
-  // console.log(req.headers.Authorization);
+  // console.log(req.headers.authorization);
 
   const token =
     req.headers.authorization.split(" ")[1] ||
     req.headers.Authorization.split(" ")[1];
   const userId = req.params.id;
+  console.log("user " + userId);
+
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
     if (err) {
       return res.status(401).json({
@@ -47,6 +49,8 @@ const authUserMiddleware = (req, res, next) => {
       });
     }
     const { payload } = user;
+    console.log("payload " + payload.id);
+    console.log(payload?.id == userId);
 
     if (payload?.isAdmin || payload?.id == userId) {
       next();

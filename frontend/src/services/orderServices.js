@@ -1,6 +1,8 @@
 import { da } from "date-fns/locale";
 import ApiService from "./ApiService";
 import { useAdminStore } from "@/stores/admin";
+import { useUserStore } from "@/stores/user";
+import { data } from "autoprefixer";
 
 class OrderServices extends ApiService {
   get entity() {
@@ -31,23 +33,47 @@ class OrderServices extends ApiService {
       },
     });
   }
+  async get(id) {
+    const user = useUserStore();
+
+    return this.request({
+      method: "get",
+      url: `/${this.entity}/${id}/`,
+      headers: {
+        Authorization: `Bearer ${user.user.access}`,
+      },
+    });
+  }
+  async getByUser(params = null) {
+    const user = useUserStore();
+
+    return this.request({
+      method: "get",
+      url: `/${this.entity}/get-by-user/${user.user.id}/`,
+      data: user.user.id,
+      headers: {
+        Authorization: `Bearer ${user.user.access}`,
+      },
+      params,
+    });
+  }
   async update(data) {
-    const adminStore = useAdminStore();
+    // const adminStore = useAdminStore();
     console.log(data.orderStatus);
 
     return this.request({
       method: "put",
-      url: `/${this.entity}/${data.id}/`,
+      url: `/${this.entity}/${data._id}/`,
       data: data,
-      headers: {
-        Authorization: `Bearer ${adminStore.admin.access}`,
-      },
+      // headers: {
+      //   Authorization: `Bearer ${adminStore.admin.access}`,
+      // },
     });
   }
 
   async delete(id) {
     console.log(id);
-    
+
     const adminStore = useAdminStore();
     return this.request({
       method: "delete",

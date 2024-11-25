@@ -5,6 +5,7 @@ import HomeView from "@/views/guest/HomeView.vue";
 import LoginView from "@/views/guest/LoginView.vue";
 import MyAccountView from "@/views/guest/MyAccountView.vue";
 import NotFoundView from "@/views/guest/NotFoundView.vue";
+import OrderDetailView from "@/views/guest/OrderDetailView.vue";
 import ProductDetailView from "@/views/guest/ProductDetailView.vue";
 import SearchView from "@/views/guest/SearchView.vue";
 import SignupView from "@/views/guest/SignupView.vue";
@@ -35,21 +36,24 @@ export const publicRoutes = [
     name: "cart",
     component: CartView,
     meta: { requiresAuth: true },
-
   },
   {
     path: "/myaccount",
     name: "myaccount",
     component: MyAccountView,
     meta: { requiresAuth: true },
-
+  },
+  {
+    path: "/order",
+    name: "order-detail",
+    component: OrderDetailView,
+    meta: { requiresAuth: true },
   },
   {
     path: "/checkout",
     name: "checkout",
     component: CheckoutView,
     meta: { requiresAuth: true },
-
   },
   {
     path: "/:catchAll(.*)",

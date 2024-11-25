@@ -1,10 +1,12 @@
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onBeforeMount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import DefaultLayout from "@/layouts/user/DefaultLayout.vue";
 import oauthServices from "@/services/oauthServices";
 import { useUserStore } from "@/stores/user";
-
+import orderServices from "@/services/orderServices";
+import Pagination from "@/components/user/pagination/Pagination.vue";
+import { loadScript } from "@paypal/paypal-js";
 const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
@@ -24,26 +26,48 @@ const profileData = ref({
   avatar: null,
 });
 
-const orders = ref([
-  {
-    id: "#ORD-2024-001",
-    date: "2024-03-15",
-    total: 129.99,
-    status: "Delivered",
-    items: [
-      { name: "Product 1", quantity: 2, price: 49.99 },
-      { name: "Product 2", quantity: 1, price: 30.01 },
-    ],
-  },
-  {
-    id: "#ORD-2024-002",
-    date: "2024-03-10",
-    total: 89.99,
-    status: "Processing",
-    items: [{ name: "Product 3", quantity: 1, price: 89.99 }],
-  },
-]);
+const orders = ref([]);
+const currentPage = ref(parseInt(route.params.page) || 1);
+const totalPages = ref(0);
+const itemsPerPage = ref(5);
+const fetchOrder = async () => {
+  await orderServices.getByUser({
+    limit: itemsPerPage.value,
+    page: currentPage.value - 1,
+  })
+    .then(response => {
+      orders.value = response.data.data
+      totalPages.value = response.data.totalPage
+    })
+    .catch(error => {
+      console.error(error)
+    })
+}
 
+onBeforeMount(
+  fetchOrder
+)
+// Event handlers
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  router.push({
+    name: "myaccount",
+    query: {
+      ...route.query,
+      page: page
+    }
+  });
+};
+watch(
+  () => [route.params.page],
+  async ([newPage]) => {
+    if (newPage) {
+      currentPage.value = parseInt(newPage);
+    }
+    await fetchOrder();
+  },
+  { immediate: true }
+);
 // Refs for avatar upload
 const fileInput = ref(null);
 const previewImage = ref(null);
@@ -113,6 +137,10 @@ function showTab(tabName) {
   router.push({ query: { ...route.query, tab: tabName } });
 }
 onMounted(() => getUser());
+const handleToOrderDetail = (id) => {
+  router.push({ name: "order-detail", query: { order: id } })
+}
+
 </script>
 
 <template>
@@ -237,54 +265,61 @@ onMounted(() => getUser());
                   <div class="flex justify-between items-start mb-6">
                     <div>
                       <h3 class="text-lg font-semibold text-gray-800">
-                        {{ order.id }}
+                        {{ order._id }}
                       </h3>
                       <p class="text-sm text-gray-500 mt-1">
-                        Ordered on {{ order.date }}
+                        Ordered on {{ order.createdAt }}
                       </p>
                     </div>
                     <span :class="{
                       'px-4 py-1.5 rounded-full text-sm font-medium': true,
                       'bg-green-50 text-green-700':
-                        order.status === 'Delivered',
+                        order.orderStatus === 'Paid',
                       'bg-blue-50 text-blue-700':
-                        order.status === 'Processing',
+                        order.orderStatus === 'Pending',
                     }">
-                      {{ order.status }}
+                      {{ order.orderStatus }}
                     </span>
                   </div>
 
                   <div class="space-y-3">
-                    <div v-for="item in order.items" :key="item.name" class="flex justify-between items-center py-2">
+                    <div v-for="item in order.orderItems" :key="item.name"
+                      class="flex justify-between items-center py-2">
                       <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <font-awesome-icon icon="box" class="w-6 h-6 text-gray-400" />
+                          <img :src="'http://127.0.0.1:8088/' + item.image" alt="">
                         </div>
                         <div>
                           <p class="font-medium text-gray-800">
                             {{ item.name }}
                           </p>
                           <p class="text-sm text-gray-500">
-                            Qty: {{ item.quantity }}
+                            Qty: {{ item.amount }}
                           </p>
                         </div>
                       </div>
-                      <span class="font-medium text-gray-800">${{ item.price.toFixed(2) }}</span>
+                      <span class="font-medium text-gray-800">{{ item.price }}</span>
                     </div>
+
                   </div>
 
                   <div class="mt-6 pt-6 border-t border-gray-100 flex justify-between items-center">
                     <div>
-                      <span class="text-sm text-gray-500">Total Amount</span>
+                      <span class="text-sm text-gray-500">Total Price</span>
                       <p class="text-lg font-semibold text-gray-800 mt-1">
-                        ${{ order.total.toFixed(2) }}
+                        {{ order.totalPrice }}
                       </p>
                     </div>
-                    <button class="px-4 py-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
+                    <button @click="handleToOrderDetail(order._id)"
+                      class="px-4 py-2 text-blue-600 font-medium hover:text-blue-700 transition-colors">
                       View Details
                     </button>
+
                   </div>
                 </div>
+                <!-- Pagination -->
+                <Pagination :total-page="totalPages" :current-page="currentPage" :max-visible-pages="5"
+                  @page-changed="handlePageChange" />
               </div>
             </div>
           </div>

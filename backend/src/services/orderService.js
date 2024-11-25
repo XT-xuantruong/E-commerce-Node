@@ -64,8 +64,7 @@ const updateOrder = (id, status) => {
   return new Promise(async (resolve, reject) => {
     try {
       const checkOrder = await Order.findOne({ _id: id });
-      console.log('order', checkOrder);
-      
+      console.log("order", checkOrder);
 
       if (checkOrder === null) {
         resolve({
@@ -124,8 +123,6 @@ const deleteOrder = (id) => {
 const getAllOrder = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
-   
-
       // Lấy danh sách sản phẩm
       const allOrders = await Order.find()
         .limit(limit)
@@ -137,11 +134,34 @@ const getAllOrder = (limit, page, sort, filter) => {
       resolve({
         status: "ok",
         message: "Get all successfully",
-        totalOrder:  totalOrder,
+        totalOrder: totalOrder,
         pageCurrent: Number(page + 1),
-        totalPage: Math.ceil(
-          (totalOrder) / limit
-        ),
+        totalPage: Math.ceil(totalOrder / limit),
+        data: allOrders,
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const getAllOrderByUser = (limit, page, id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Lấy danh sách sản phẩm
+      const allOrders = await Order.find({ user: id })
+        .limit(limit)
+        .skip(page * limit);
+
+      // Tổng số sản phẩm trong cơ sở dữ liệu
+      const totalOrder = await Order.countDocuments({ user: id });
+
+      resolve({
+        status: "ok",
+        message: "Get all successfully",
+        totalOrder: totalOrder,
+        pageCurrent: Number(page + 1),
+        totalPage: Math.ceil(totalOrder / limit),
         data: allOrders,
       });
     } catch (e) {
@@ -153,9 +173,9 @@ const getAllOrder = (limit, page, sort, filter) => {
 const getDetailOrder = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const product = await Order.findOne({ _id: id });
+      const order = await Order.findOne({ _id: id });
 
-      if (product === null) {
+      if (order === null) {
         resolve({
           status: "ok",
           messsage: "The product is not existing",
@@ -165,7 +185,7 @@ const getDetailOrder = (id) => {
       resolve({
         status: "ok",
         messsage: "Get detail successfully",
-        data: product,
+        data: order,
       });
     } catch (e) {
       reject(e);
@@ -179,4 +199,5 @@ module.exports = {
   deleteOrder,
   getAllOrder,
   getDetailOrder,
+  getAllOrderByUser,
 };

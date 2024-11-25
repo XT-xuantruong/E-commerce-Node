@@ -37,8 +37,7 @@ const updateOrder = async (req, res) => {
     const orderId = req.params.id;
     const data = req.body;
     console.log(data);
-    
-    
+
     const response = await orderService.updateOrder(orderId, data.orderStatus);
     return res.status(200).json(response);
   } catch (e) {
@@ -62,8 +61,6 @@ const deleteOrder = async (req, res) => {
 
 const getAllOrder = async (req, res) => {
   try {
-
-    
     const { limit, page } = req.query;
     const response = await orderService.getAllOrder(
       Number(limit),
@@ -77,21 +74,42 @@ const getAllOrder = async (req, res) => {
     });
   }
 };
-
-const getDetailUser = async (req, res) => {
+const getAllOrderByUser = async (req, res) => {
   try {
-    const userId = req.params.id;
-    if (!userId) {
+    const { limit, page } = req.query;
+    const id = req.params.id;
+    const response = await orderService.getAllOrderByUser(
+      Number(limit),
+      Number(page),
+      id
+    );
+
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(404).json({
+      message: e.message,
+    });
+  }
+};
+
+const getDetaiOrder = async (req, res) => {
+  try {
+    const Id = req.params.id;
+    console.log(Id);
+
+    if (!Id) {
       return res.status(200).json({
         status: "ERR",
         message: "The input is required",
       });
     }
-    const response = await userService.getDetailUser(userId);
+
+    const response = await orderService.getDetailOrder(Id);
+
     return res.status(200).json(response);
   } catch (e) {
     return res.status(404).json({
-      message: e,
+      message: e.message,
     });
   }
 };
@@ -101,5 +119,6 @@ module.exports = {
   updateOrder,
   deleteOrder,
   getAllOrder,
-  getDetailUser,
+  getDetaiOrder,
+  getAllOrderByUser,
 };
