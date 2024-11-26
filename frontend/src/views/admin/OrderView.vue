@@ -3,6 +3,8 @@ import { onBeforeMount, ref } from "vue";
 import DefaultLayout from "@/layouts/admin/DefaultLayout.vue";
 import TableOrder from "@/components/admin/Tables/TableOrder.vue";
 import orderServices from "@/services/orderServices";
+import oauthServices from "@/services/oauthServices";
+import { useAdminStore } from "@/stores/admin";
 
 const orders = ref([]);
 
@@ -42,8 +44,8 @@ const handleDeleteClick = (order) => {
 
 const deleteOrder = async () => {
   try {
-    await orderServices.delete(orderToDelete.value._id)
-  
+    await orderServices.delete(orderToDelete.value._id);
+
     // Update UI
     orders.value = orders.value.filter(
       (order) => order._id !== orderToDelete.value._id
@@ -66,16 +68,20 @@ const cancelDelete = () => {
 };
 console.log(orders.value);
 
-
 const updateOrderStatus = async (order) => {
   try {
     console.log(orders.value, order._id);
-    
-    await orderServices.update({"orderStatus": order.orderStatus, "id": order._id})
+
+    await orderServices.update({
+      orderStatus: order.orderStatus,
+      id: order._id,
+    });
 
     // Update UI
-    const index = orders.value.findIndex((o) => {console.log("l");
-     o._id === order._id});
+    const index = orders.value.findIndex((o) => {
+      console.log("l");
+      o._id === order._id;
+    });
     if (index !== -1) {
       orders.value[index] = { ...order };
     }
@@ -88,12 +94,24 @@ const updateOrderStatus = async (order) => {
 };
 
 onBeforeMount(async () => {
-  await orderServices.gets().then((response) => {    
-    orders.value = response.data.data;
+  const access = useAdminStore().admin.access;
+  const response = await orderServices.gets();
+  const orderList = response.data.data;
+  for (const element of orderList) {
+    const userResponse = await oauthServices.getme(access, element.user);
+    element.name = userResponse.data.data.name;
+  }
+  orders.value = orderList;
+});
 
-  })
-})
-
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 </script>
 
 <template>
@@ -120,9 +138,7 @@ onBeforeMount(async () => {
           class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:border-strokedark dark:bg-boxdark"
         >
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium">
-              Order Details - 
-            </h3>
+            <h3 class="text-lg font-medium">Order Details</h3>
             <button
               @click="closeModal"
               class="text-gray-400 hover:text-gray-500"
@@ -136,11 +152,11 @@ onBeforeMount(async () => {
             <div class="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <p class="font-semibold">Customer:</p>
-                <p>{{ selectedOrder.user }}</p>
+                <p>{{ selectedOrder.name }}</p>
               </div>
               <div>
                 <p class="font-semibold">Order Date:</p>
-                <p>{{ selectedOrder.createdAt }}</p>
+                <p>{{ formatDate(selectedOrder.createdAt) }}</p>
               </div>
               <div>
                 <p class="font-semibold">Status:</p>
@@ -203,7 +219,6 @@ onBeforeMount(async () => {
                     >
                       Subtotal
                     </th>
-                    
                   </tr>
                 </thead>
                 <tbody

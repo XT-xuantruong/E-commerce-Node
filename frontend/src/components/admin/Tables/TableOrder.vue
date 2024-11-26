@@ -32,6 +32,15 @@ const handleViewDetails = order => {
 const handleDelete = order => {
   emit('deleteOrder', order)
 }
+
+const formatDate = (date) => {
+    if (!date) return ''
+    return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    })
+}
 </script>
 
 <template>
@@ -72,10 +81,10 @@ const handleDelete = order => {
           <tr v-for="order in orders" :key="order.id">
            
             <td class="py-5 px-4">
-              <p class="text-black dark:text-white">{{ order.user }}</p>
+              <p class="text-black dark:text-white">{{ order.name }}</p>
             </td>
             <td class="py-5 px-4">
-              <p class="text-black dark:text-white">{{ order.createdAt }}</p>
+              <p class="text-black dark:text-white">{{formatDate(order.createdAt) }}</p>
             </td>
             <td class="py-5 px-4">
               <p class="text-black dark:text-white">
