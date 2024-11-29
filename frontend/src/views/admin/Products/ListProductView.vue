@@ -153,6 +153,13 @@ const filteredProducts = computed(() => {
       findcategory(product.category).toLowerCase().includes(query)
   );
 });
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
+};
+
 </script>
 
 <template>
@@ -221,7 +228,7 @@ const filteredProducts = computed(() => {
           </div>
           <div class="col-span-1 flex items-center">
             <p class="text-sm font-medium text-black dark:text-white">
-              ${{ product.price.toLocaleString() }}
+              {{ formatCurrency(product.price) }}
             </p>
           </div>
           <div class="col-span-1 flex items-center">

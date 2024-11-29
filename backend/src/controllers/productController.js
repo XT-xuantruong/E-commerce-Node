@@ -99,24 +99,24 @@ const updateProduct = async (req, res) => {
       ? processMultipleImagePaths(req.files.images)
       : existingProduct.data.images;
 
-    // Xóa ảnh thumbnail cũ nếu có ảnh mới
-    if (req.files?.thumbnail && existingProduct.data.thumbnail) {
-      deleteFile(
-        path.join(__dirname, "../../uploads", existingProduct.thumbnail)
-      );
-    }
+    // // Xóa ảnh thumbnail cũ nếu có ảnh mới
+    // if (req.files?.thumbnail && existingProduct.data.thumbnail) {
+    //   deleteFile(
+    //     path.join(__dirname, "../../uploads", existingProduct.thumbnail)
+    //   );
+    // }
 
-    // Xóa ảnh trong danh sách images cũ không còn sử dụng
-    if (req.files?.images?.length) {
-      if (existingProduct.data.images.length > 0) {
-        const imagesToDelete = existingProduct.data.images.filter(
-          (oldImage) => !newImages.includes(oldImage)
-        );
-        imagesToDelete.forEach((imagePath) => {
-          deleteFile(path.join(__dirname, "../../uploads", imagePath));
-        });
-      }
-    }
+    // // Xóa ảnh trong danh sách images cũ không còn sử dụng
+    // if (req.files?.images?.length) {
+    //   if (existingProduct.data.images.length > 0) {
+    //     const imagesToDelete = existingProduct.data.images.filter(
+    //       (oldImage) => !newImages.includes(oldImage)
+    //     );
+    //     imagesToDelete.forEach((imagePath) => {
+    //       deleteFile(path.join(__dirname, "../../uploads", imagePath));
+    //     });
+    //   }
+    // }
 
     // Gán giá trị mới
     data.thumbnail = newThumbnail;

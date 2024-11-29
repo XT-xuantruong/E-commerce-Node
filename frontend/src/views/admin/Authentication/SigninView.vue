@@ -3,8 +3,10 @@ import { ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import oauthServices from "@/services/oauthServices";
 import { useAdminStore } from "@/stores/admin";
+import { useUserStore } from "@/stores/user";
 
 const adminStore = useAdminStore();
+const userStore = useUserStore()
 const router = useRouter();
 const email = ref("");
 const password = ref("");
@@ -71,6 +73,7 @@ const handleSubmit = async (event) => {
 
 
     adminStore.setAdminInfo(loginResponse.data.user);
+    userStore.removeToken()
     router.push("/admin/");
   } catch (error) {
     formError.value = "Invalid email or password";

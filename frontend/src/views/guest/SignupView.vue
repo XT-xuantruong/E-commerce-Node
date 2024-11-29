@@ -74,38 +74,38 @@ const handleFacebookSignup = async () => {
 };
 
 const onSubmit = async (values) => {
-  try {
-    console.log("Signing up with:", values);
+    try {
+        console.log("Signing up with:", values);
 
-    oauthServices
-      .signup(values)
-      .then((response) => {
-        if (response.status === 200) {
-          toastStore.showToast(
-            5000,
-            "The user is registered. Please activate your account by clicking your email link.",
-            "bg-emerald-500"
-          );
-        } else {
-          const data = JSON.parse(response.data.message);
-          for (const key in data) {
-            errors.value.push(data[key][0].message);
-          }
+        oauthServices
+            .signup(values)
+            .then((response) => {
+                if (response.status === 200) {
+                    toastStore.showToast(
+                        5000,
+                        "Sign up successfully",
+                        "bg-emerald-500"
+                    );
+                } else {
+                    const data = JSON.parse(response.data.message);
+                    for (const key in data) {
+                        errors.value.push(data[key][0].message);
+                    }
 
-          toastStore.showToast(
-            5000,   
-            "Something went wrong. Please try again",
-            "bg-red-300"
-          );
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-      });
-  } catch (error) {
-    formError.value = "Registration failed. Please try again.";
-    console.error("Signup error:", error);
-  }
+                    toastStore.showToast(
+                        5000,
+                        "Something went wrong. Please try again",
+                        "bg-red-300"
+                    );
+                }
+            })
+            .catch((error) => {
+                console.log("error", error);
+            });
+    } catch (error) {
+        formError.value = "Registration failed. Please try again.";
+        console.error("Signup error:", error);
+    }
 };
 </script>
 

@@ -168,7 +168,6 @@ const refreshToken = async (req, res) => {
 const logoutUser = async (req, res) => {
   try {
     const { access_token, refresh_token } = req.body;
-    console.log("long ngon", access_token);
     const response = await userService.logoutUser(access_token, refresh_token);
     return res.status(200).json(response);
   } catch (e) {

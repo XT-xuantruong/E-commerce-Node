@@ -87,6 +87,12 @@ export const useUserStore = defineStore("user", {
 
       console.log("User", this.user);
     },
+    updateAvatar(avatar) {
+      console.log(avatar);
+
+      this.user.avatar = avatar;
+      localStorage.setItem("user.avatar", this.user.avatar);
+    },
 
     refreshToken() {
       axios

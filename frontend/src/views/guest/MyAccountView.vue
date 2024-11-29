@@ -128,7 +128,8 @@ const getUser = async () => {
 const handleProfileUpdate = async (event) => {
   event.preventDefault();
   await oauthServices.updateProfile(userStore.user.id, profileData.value).then((res) => {
-    console.log(res.data)
+    userStore.updateAvatar(res.data.data.avatar)
+    console.log(res.data.data.avatar)
   });
 };
 

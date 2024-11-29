@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const path = require("path");
-const { log } = require("console");
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const authMiddleware = (req, res, next) => {
@@ -10,6 +9,8 @@ const authMiddleware = (req, res, next) => {
   const token =
     req.headers.authorization.split(" ")[1] ||
     req.headers.Authorization.split(" ")[1];
+  console.log("token: " + token);
+
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
     if (err) {
       return res.status(401).json({

@@ -31,6 +31,8 @@ class CategoryServices extends ApiService {
 
   async delete(id) {
     const adminStore = useAdminStore();
+    console.log(adminStore.admin.access);
+
     return this.request({
       method: "delete",
       url: `/${this.entity}/${id}/`,

@@ -10,8 +10,8 @@
         <!-- Product Info -->
         <div class="w-1/2">
           <h1 class="text-4xl font-bold text-black">{{ item.name }}</h1>
-          <p class="text-2xl mt-4 line-through text-red-500">
-            ${{ item.price }}
+          <p class="text-2xl mt-4 text-red-500">
+            {{ formatCurrency(item.price) }}
           </p>
           <!-- <p class="text-2xl mt-4 text-yellow-600">${{ calculateDiscountedPrice(item.price,
                         item.discount).toFixed(2) }}</p> -->
@@ -29,37 +29,21 @@
 
           <!-- Quantity Selector -->
           <div class="flex items-center rounded product-qty">
-            <button
-              type="button"
-              class="quantity-left-minus bg-red-500 btn-number text-white p-1 rounded"
-              data-type="minus"
-              @click="decrementQuantity"
-            >
+            <button type="button" class="quantity-left-minus bg-red-500 btn-number text-white p-1 rounded"
+              data-type="minus" @click="decrementQuantity">
               <font-awesome-icon icon="minus" />
             </button>
-            <input
-              type="text"
-              id="quantity"
-              name="quantity"
+            <input type="text" id="quantity" name="quantity"
               class="form-control input-number w-12 text-center border-0 focus:ring-0 focus:outline-none"
-              :value="quantity"
-              readonly
-            />
-            <button
-              type="button"
-              class="quantity-right-plus bg-green-500 btn-number text-white p-1 rounded"
-              data-type="plus"
-              @click="incrementQuantity"
-            >
+              :value="quantity" readonly />
+            <button type="button" class="quantity-right-plus bg-green-500 btn-number text-white p-1 rounded"
+              data-type="plus" @click="incrementQuantity">
               <font-awesome-icon icon="plus" />
             </button>
           </div>
 
           <!-- Add to Cart Button -->
-          <button
-            class="mt-6 bg-yellow-500 text-white px-6 py-3 rounded-lg"
-            @click="handleAddToCart"
-          >
+          <button class="mt-6 bg-yellow-500 text-white px-6 py-3 rounded-lg" @click="handleAddToCart">
             Add to Cart
           </button>
 
@@ -108,7 +92,8 @@ import DefaultLayout from "@/layouts/user/DefaultLayout.vue";
 import ImageGallery from "@/components/user/slider/ImageGallery.vue";
 import { useCartStore } from "@/stores/cart";
 import productServices from "@/services/productServices";
-
+import { useUserStore } from "@/stores/user";
+const user = useUserStore()
 const route = useRoute();
 const router = useRouter();
 const cartStore = useCartStore();
@@ -152,20 +137,24 @@ const handleAddToCart = () => {
   console.log(cartStore.items);
   cartStore.items.forEach((ele) => {
     if (ele._id === item.value._id) {
-        
-        ele.quantity += quantity.value;
-        return;
-      }
+
+      ele.quantity += quantity.value;
+      return;
+    }
   });
   const data = {
     ...item.value,
     quantity: quantity.value,
-    user: {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-    },
-  };
+    user: user.user.id
+  }
   cartStore.addItem(data);
 };
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
+};
+
 </script>

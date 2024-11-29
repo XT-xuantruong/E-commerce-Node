@@ -142,6 +142,6 @@ onBeforeMount(() => {
 
 // Methods
 const navigateToShop = () => {
-  router.push('/shop')
+  router.push('/search')
 }
 </script>
