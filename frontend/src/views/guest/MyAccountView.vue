@@ -398,7 +398,7 @@ const handleToOrderDetail = (id) => {
                     <div>
                       <span class="text-sm text-gray-500">Total Price</span>
                       <p class="text-lg font-semibold text-gray-800 mt-1">
-                        {{ formatVND(getOrderTotal(order)) }}
+                        {{ formatVND(order.total_amount) }}
                       </p>
                     </div>
                     <button

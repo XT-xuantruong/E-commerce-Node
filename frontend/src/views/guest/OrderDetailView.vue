@@ -35,7 +35,6 @@ const fetchOrder = async () => {
 };
 
 const initializePayPal = async () => {
-  if (paypalLoaded.value) return;
 
   try {
     const paypal = await loadScript({
@@ -112,7 +111,9 @@ const initializePayPal = async () => {
 watch(
   () => paymentData.value.payment_status,
   (newStatus) => {
-    if (newStatus === "pending") {
+    console.log("status", newStatus);
+    
+    if (newStatus === "failed") {
       console.log("Payment status is Pending, initializing PayPal...");
       initializePayPal();
     }
@@ -188,7 +189,7 @@ const formatPrice = (price) => {
           </div>
 
           <!-- PayPal Button Container -->
-          <div v-if="paymentData.payment_status === 'pending'" class="mt-4">
+          <div v-if="paymentData.payment_status === 'failed'" class="mt-4">
             <div id="paypal-button-container" class="max-w-md mx-auto"></div>
             <p v-if="!paypalLoaded" class="text-sm text-gray-500 text-center mt-2">
               Loading payment options...
