@@ -134,10 +134,8 @@ const formatDate = (date) => {
 };
 
 const totalUSD = computed(() => {
-  if (!order.value.items || !order.value.items.length) return "0.00";
-  return (
-    order.value.items.reduce((total, item) => total + (item.price || 0), 0) / 23000
-  ).toFixed(2);
+  if (!order.value.total_amount || isNaN(order.value.total_amount)) return "0.00";
+  return (order.value.total_amount / 23000).toFixed(2);
 });
 
 const formatPrice = (price) => {
@@ -245,7 +243,7 @@ const formatPrice = (price) => {
               <div class="flex justify-between">
                 <p class="text-lg font-semibold">Total:</p>
                 <p class="text-lg font-semibold">
-                  {{ formatPrice(order.totalPrice) }}
+                  {{ formatPrice(order.total_amount) }}
                 </p>
               </div>
               <p class="text-sm text-gray-500 mt-1 text-right">
