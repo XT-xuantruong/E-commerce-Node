@@ -1,7 +1,7 @@
 <template>
-    <div @click="navigateToCategory(category.slug)" class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer
+    <div @click="navigateToCategory(category.category_id)" class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer
                     border-2 border-transparent hover:border-blue-600">
-        <h3 class="text-lg text-blue-600 font-semibold text-center">{{ category.title }}</h3>
+        <h3 class="text-lg text-blue-600 font-semibold text-center">{{ category.name }}</h3>
     </div>
 </template>
 
@@ -17,7 +17,9 @@ const props = defineProps({
     },
 })
 
+console.log(props.category);
+
 const navigateToCategory = (slug) => {
-    router.push(`/category/${slug}/`)
+    router.push(`/category/${slug}`)
 }
 </script>

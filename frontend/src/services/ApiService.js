@@ -52,17 +52,21 @@ export default class ApiService {
   async gets(params = null) {
     let option = {
       method: "get",
-      url: `/${this.entity}/`,
+      url: `/${this.entity}`,
     };
     if (params) {
       option = { ...option, params };
     }
+    console.log("option");
+    
+    console.log(option);
+    
     return this.request(option);
   }
   async get(id) {
     return this.request({
       method: "get",
-      url: `/${this.entity}/${id}/`,
+      url: `/${this.entity}/${id}`,
     });
   }
 

@@ -98,7 +98,7 @@
               <img
                 :src="
                   userStore.user.avatar
-                    ? 'http://127.0.0.1:8088' + userStore.user.avatar
+                    ? userStore.user.avatar
                     : 'https://i.pinimg.com/1200x/bc/43/98/bc439871417621836a0eeea768d60944.jpg'
                 "
                 alt="User avatar"

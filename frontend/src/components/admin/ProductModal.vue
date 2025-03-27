@@ -1,4 +1,3 @@
-<!-- ProductModal.vue -->
 <template>
   <div>
     <!-- Modal Trigger Button -->
@@ -24,8 +23,6 @@
           <form @submit.prevent="handleSubmit" class="space-y-4">
             <!-- Basic Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-
               <div class="form-control">
                 <label class="block text-sm font-medium mb-1">Product Name</label>
                 <input type="text" v-model="productData.name" required
@@ -35,17 +32,18 @@
 
               <div class="form-control">
                 <label class="block text-sm font-medium mb-1">Category</label>
-                <select v-model="productData.category" required
+                <select v-model="productData.category_id" required
                   class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white">
-                  <option v-for="category in categories" :value="category._id">
-                    {{ category.title }}
+                  <option value="">Chọn danh mục</option>
+                  <option v-for="category in categories" :value="category.category_id">
+                    {{ category.name }}
                   </option>
                 </select>
               </div>
 
               <div class="form-control">
                 <label class="block text-sm font-medium mb-1">Quantity</label>
-                <input type="number" v-model="productData.countInStock" required min="1"
+                <input type="number" v-model="productData.stock" required min="1"
                   class="w-full p-2 border rounded focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white"
                   placeholder="Enter quantity" />
               </div>
@@ -60,36 +58,17 @@
 
             <!-- Product Images -->
             <div class="space-y-2">
-              <label class="block text-sm font-medium">Thumbnail Image</label>
-              <div class="flex items-center space-x-4">
-                <div class="w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center relative">
-                  <img v-if="productData.thumbnail" :src="productData.thumbnail"
-                    class="w-full h-full object-cover rounded-lg" />
-                  <input type="file" @change="handleThumbnailUpload" accept="image/*"
-                    class="absolute inset-0 opacity-0 cursor-pointer" />
-                  <div v-if="!productData.thumbnail" class="text-center text-gray-500">
-                    <i class="fas fa-upload mb-2"></i>
-                    <p class="text-sm">Upload image</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="space-y-2">
-              <label class="block text-sm font-medium">Additional Images</label>
-
-              <!-- Input upload nhiều ảnh -->
+              <label class="block text-sm font-medium">Product Images</label>
               <div>
-                <input type="file" accept="image/*" multiple @change="handleMultipleImagesUpload"
+                <input type="file" accept="image/*" multiple @change="handleImagesUpload"
                   class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none dark:text-gray-400 dark:bg-meta-4 dark:border-strokedark dark:placeholder-gray-500" />
               </div>
 
               <!-- Preview các ảnh đã chọn -->
               <div class="flex flex-wrap gap-4 mt-4">
-                <div v-for="(image, index) in productData.images" :key="index"
+                <div v-for="(image, index) in imagePreviews" :key="index"
                   class="relative w-32 h-32 border border-gray-300 rounded-lg overflow-hidden">
                   <img :src="image" class="w-full h-full object-cover" />
-
-                  <!-- Nút xóa ảnh -->
                   <button @click="removeImage(index)"
                     class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
                     <font-awesome-icon icon="trash" />
@@ -125,25 +104,24 @@
 </template>
 
 <script setup>
-import categoryServices from '@/services/categoryServices'
 import { ref, reactive, onBeforeMount } from "vue";
+import categoryServices from '@/services/categoryServices';
 
 const emit = defineEmits(["add-product"]);
 
 const isOpen = ref(false);
 const isSubmitting = ref(false);
-const categories = ref([])
-
+const categories = ref([]);
 
 const productData = reactive({
   name: "",
-  category: "",
-  countInStock: 1,
+  category_id: "",
+  stock: 1,
   price: 0,
-  thumbnail: "",
-  images: [],
+  images: [], // Lưu file gốc
   description: "",
 });
+
 
 const openModal = () => {
   isOpen.value = true;
@@ -157,55 +135,41 @@ const closeModal = () => {
 const resetForm = () => {
   Object.assign(productData, {
     name: "",
-    category: "",
-    countInStock: 1,
+    category_id: "",
+    stock: 1,
     price: 0,
-    thumbnail: "",
     images: [],
     description: "",
   });
 };
 
-const handleThumbnailUpload = (event) => {
-  event.stopPropagation();
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      productData.thumbnail = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-const handleMultipleImagesUpload = (event) => {
-  const files = event.target.files; // Lấy danh sách file từ input
+const handleImagesUpload = (event) => {
+  const files = event.target.files;
   if (files && files.length) {
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        // Thêm URL của ảnh vào mảng `productData.images`
-        productData.images.push(e.target.result);
+        productData.images.push(e.target.result); // Lưu URL preview
       };
-      reader.readAsDataURL(file); // Đọc file dưới dạng Data URL
+      reader.readAsDataURL(file);
     });
   }
 };
 
 const removeImage = (index) => {
-  // Xóa ảnh khỏi mảng `productData.images`
   productData.images.splice(index, 1);
+  imagePreviews.value.splice(index, 1);
 };
 
-
-
 const handleSubmit = async () => {
+  if (!productData.name || !productData.category_id || !productData.stock || !productData.price) {
+    alert("Vui lòng điền đầy đủ thông tin!");
+    return;
+  }
+
   try {
     isSubmitting.value = true;
-
-    // Add new product to the list
     emit("add-product", { ...productData });
-
-    // Close modal and reset form
     closeModal();
   } catch (error) {
     console.error("Error adding product:", error);
@@ -215,15 +179,14 @@ const handleSubmit = async () => {
 };
 
 const fetchCategory = async () => {
-  await categoryServices
-    .gets()
-    .then((response) => {
-      categories.value = response.data.data;
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+  try {
+    const response = await categoryServices.gets();
+    categories.value = response.data.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy danh mục:", error);
+  }
 };
+
 onBeforeMount(() => {
   fetchCategory();
 });

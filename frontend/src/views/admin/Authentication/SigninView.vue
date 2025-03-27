@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from "vue-router";
 import oauthServices from "@/services/oauthServices";
 import { useAdminStore } from "@/stores/admin";
 import { useUserStore } from "@/stores/user";
+import userServices from "@/services/userServices";
 
 const adminStore = useAdminStore();
 const userStore = useUserStore()
@@ -67,12 +68,16 @@ const handleSubmit = async (event) => {
       email: email.value,
       password: password.value,
     });
-
+    console.log("hay quá");
     adminStore.setToken(loginResponse.data);
-    console.log("long", loginResponse.data);
+    console.log(loginResponse.data.access_token);
 
+    const adminResponse = await userServices.getme(
+      loginResponse.data.access_token,
+    );
+    console.log(adminResponse.data);
 
-    adminStore.setAdminInfo(loginResponse.data.user);
+    adminStore.setAdminInfo(adminResponse.data.data);
     userStore.removeToken()
     router.push("/admin/");
   } catch (error) {

@@ -73,10 +73,10 @@ export const useAdminStore = defineStore("admin", {
     },
 
     setAdminInfo(admin) {
-      console.log("setadminInfo", admin._id);
+      console.log("setadminInfo", admin.user_id);
 
-      this.admin.id = admin._id;
-      this.admin.name = admin.name;
+      this.admin.id = admin.user_id;
+      this.admin.name = admin.full_name;
       this.admin.email = admin.email;
       // this.admin.avatar = admin.avatar;
 

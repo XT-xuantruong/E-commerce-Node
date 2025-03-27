@@ -3,7 +3,7 @@ import ApiService from "./ApiService";
 
 class CategoryServices extends ApiService {
   get entity() {
-    return "category";
+    return "categories";
   }
   async create(data) {
     const adminStore = useAdminStore();
@@ -18,10 +18,10 @@ class CategoryServices extends ApiService {
   }
   async update(data) {
     const adminStore = useAdminStore();
-    const { _id } = data;
+    const { category_id } = data;
     return this.request({
       method: "put",
-      url: `/${this.entity}/${_id}/`,
+      url: `/${this.entity}/${category_id}`,
       data: data,
       headers: {
         Authorization: `Bearer ${adminStore.admin.access}`,
@@ -35,7 +35,7 @@ class CategoryServices extends ApiService {
 
     return this.request({
       method: "delete",
-      url: `/${this.entity}/${id}/`,
+      url: `/${this.entity}/${id}`,
       headers: {
         Authorization: `Bearer ${adminStore.admin.access}`,
       },

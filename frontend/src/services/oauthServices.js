@@ -3,35 +3,42 @@ import { useUserStore } from "@/stores/user";
 
 class OauthServices extends ApiService {
   get entity() {
-    return "user";
+    return "auth";
   }
 
   async login(credential) {
     const { email, password } = credential;
     var data = {
-      email: email,
+      username: email,
       password: password,
+      scope: "",
+      grant_type: "password",
+      client_id: "string",
+      client_secret: "string",
     };
     console.log(data);
     return this.request({
       method: "post",
-      url: `/${this.entity}/sign-in/`,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      url: `/${this.entity}/login`,
       data: data,
     });
   }
   async signup(credential) {
-    const { name, email, password, confirmPassword, phone } = credential;
+    const { full_name, email, password, address, phone } = credential;
     var data = {
-      name: name,
+      full_name: full_name,
       email: email,
       password: password,
-      confirmPassword: confirmPassword,
+      address: address,
       phone: phone,
     };
     console.log(data);
     return this.request({
       method: "post",
-      url: `/${this.entity}/sign-up/`,
+      url: `/${this.entity}/register`,
       data: data,
     });
   }
@@ -43,31 +50,25 @@ class OauthServices extends ApiService {
     };
     const option = {
       method: "post",
-      url: `/${this.entity}/logout/`,
+      url: `/${this.entity}/logout`,
+      headers: {
+        Authorization: `Bearer ${access}`,
+      },
       data: data,
     };
     return this.request(option);
   }
 
-  async gets(access) {
-    const option = {
-      method: "get",
-      url: `/${this.entity}/getall/`,
-      headers: {
-        Authorization: `Bearer ${access}`,
-      },
-    };
-    return this.request(option);
-  }
+
 
   async getme(access, id) {
-    console.log(access);
+    const user = useUserStore();
 
     const option = {
       method: "get",
       url: `/${this.entity}/detail-user/${id}/`,
       headers: {
-        Authorization: `Bearer ${access}`,
+        Authorization: `Bearer ${user.user.access}`,
       },
     };
     return this.request(option);

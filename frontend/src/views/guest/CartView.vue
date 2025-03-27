@@ -86,7 +86,7 @@ function formatVND(amount) {
                                 <tr v-for="item in cartStore.items" :key="item.id" class="border-b">
                                     <td class="py-4">
                                         <div class="flex items-center">
-                                            <img :src="'http://127.0.0.1:8088/' + item.thumbnail" :alt="item.name"
+                                            <img :src="item.images[0].image_url" :alt="item.name"
                                                 class="w-16 h-16 object-cover rounded mr-4" />
                                             <div>
                                                 <h2 class="text-lg font-bold">{{ item.name }}</h2>

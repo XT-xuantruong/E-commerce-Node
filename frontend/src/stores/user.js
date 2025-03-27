@@ -76,7 +76,7 @@ export const useUserStore = defineStore("user", {
       console.log("setUserInfo", user._id);
 
       this.user.id = user._id;
-      this.user.name = user.name;
+      this.user.name = user.full_name;
       this.user.email = user.email;
       this.user.avatar = user.avatar;
 

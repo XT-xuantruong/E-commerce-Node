@@ -4,6 +4,7 @@ import orderServices from "@/services/orderServices";
 import oauthServices from "@/services/oauthServices";
 import productServices from "@/services/productServices";
 import { useAdminStore } from "@/stores/admin";
+import userServices from "@/services/userServices";
 
 const totalPriceOrder = ref(0);
 const countUser = ref(0);
@@ -17,13 +18,15 @@ onBeforeMount(async () => {
     });
     const orders = await orderServices.gets().then((reponse) => {
       totalPriceOrder.value = reponse.data.data.reduce(
-        (sum, order) => sum + order.totalPrice,
+        (sum, order) => sum + order.total_amount,
         0
       );
       console.log(reponse.data.data);
       
     });
-    await oauthServices.gets(access).then((reponse) => {
+    await userServices.gets(access).then((reponse) => {
+      console.log("hay", reponse.data.data);
+      
       countUser.value = reponse.data.data.length;
     });
 

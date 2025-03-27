@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from "vue-router";
 import DefaultLayout from "@/layouts/user/DefaultLayout.vue";
 import oauthServices from "@/services/oauthServices";
 import { useUserStore } from "@/stores/user";
+import userServices from "@/services/userServices";
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -70,9 +71,8 @@ const handleSubmit = async (event) => {
     });
     userStore.setToken(loginResponse.data);
 
-    const userResponse = await oauthServices.getme(
+    const userResponse = await userServices.getme(
       loginResponse.data.access_token,
-      loginResponse.data.user._id
     );
     console.log(userResponse.data);
 

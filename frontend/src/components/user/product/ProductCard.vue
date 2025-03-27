@@ -1,5 +1,5 @@
 <template>
-    <RouterLink :to="`/product/${item._id}`">
+    <RouterLink :to="`/product/${item.product_id}`">
         <div class="product-item relative">
             <!-- <span class="badge bg-green-500 absolute m-3 text-white rounded">-{{ item.discount }}%</span> -->
             <!-- <a href="#" class="btn-wishlist">
@@ -7,7 +7,7 @@
             </a> -->
             <figure>
                 <a href="index.html" title="Sunstar Fresh Melon Juice">
-                    <img :src="'http://127.0.0.1:8088/' + item.thumbnail" :alt="item.title" class="w-full h-auto" />
+                    <img :src="item.images[0].image_url" :alt="item.title" class="w-full h-auto" />
                 </a>
             </figure>
             <h3 class="line-clamp-2">
@@ -60,6 +60,9 @@ const props = defineProps({
         required: true,
     },
 });
+
+console.log("long đẹp");
+console.log(props.item);
 
 const quantity = ref(1);
 

@@ -21,7 +21,7 @@
                     'thumbnail',
                     index + startIndex === currentIndex ? 'border-2 border-red-500' : '',
                 ]" @click="selectImage(index + startIndex)">
-                    <img :src="getImageUrl(image)" :alt="`Thumbnail ${index + 1}`" class="thumbnail-image" />
+                    <img :src="getImageUrl(image.image_url)" :alt="`Thumbnail ${index + 1}`" class="thumbnail-image" />
                 </div>
             </div>
 
@@ -57,18 +57,25 @@ const totalImages = computed(() => props.images?.length || 0);
 
 const currentImage = computed(() => {
     if (!hasImages.value) return null;
-    return props.images[currentIndex.value];
+    return props.images[currentIndex.value].image_url;
 });
 
 const visibleThumbnails = computed(() => {
     if (!hasImages.value) return [];
+    console.log(props.images.slice(startIndex.value, startIndex.value + thumbnailsToShow));
+    
     return props.images.slice(startIndex.value, startIndex.value + thumbnailsToShow);
 });
+
+console.log("long");
+
+console.log(visibleThumbnails);
+
 
 // Methods
 const getImageUrl = (path) => {
     if (!path) return '';
-    return `http://127.0.0.1:8088/${path}`;
+    return path;
 };
 
 function selectImage(index) {

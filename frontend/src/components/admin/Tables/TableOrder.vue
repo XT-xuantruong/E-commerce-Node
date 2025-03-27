@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits } from "vue";
 
 defineProps({
   orders: {
@@ -10,37 +10,38 @@ defineProps({
     type: Array,
     required: true,
   },
-})
+});
 
-const emit = defineEmits(['updateStatus', 'viewDetails', 'deleteOrder'])
+const emit = defineEmits(["updateStatus", "viewDetails", "deleteOrder"]);
 
-const formatCurrency = amount => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(amount)
-}
-
-const handleStatusChange = order => {
-  emit('updateStatus', order)
-}
-
-const handleViewDetails = order => {
-  emit('viewDetails', order)
-}
-
-const handleDelete = order => {
-  emit('deleteOrder', order)
-}
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+};
 
 const formatDate = (date) => {
-    if (!date) return ''
-    return new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    })
-}
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const handleStatusChange = (order, newStatus) => {
+  const updatedOrder = { ...order, status: newStatus };
+  emit("updateStatus", updatedOrder); // Emit đơn hàng đã cập nhật với trạng thái mới
+};
+
+const handleViewDetails = (order) => {
+  emit("viewDetails", order);
+};
+
+const handleDelete = (order) => {
+  emit("deleteOrder", order);
+};
 </script>
 
 <template>
@@ -51,7 +52,6 @@ const formatDate = (date) => {
       <table class="w-full table-auto">
         <thead>
           <tr class="bg-gray-2 text-left dark:bg-meta-4">
-           
             <th
               class="min-w-[180px] py-4 px-4 font-medium text-black dark:text-white"
             >
@@ -78,30 +78,33 @@ const formatDate = (date) => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="order in orders" :key="order.id">
-           
+          <tr v-for="order in orders" :key="order.order_id">
             <td class="py-5 px-4">
-              <p class="text-black dark:text-white">{{ order.name }}</p>
-            </td>
-            <td class="py-5 px-4">
-              <p class="text-black dark:text-white">{{formatDate(order.createdAt) }}</p>
+              <p class="text-black dark:text-white">
+                {{ order.recipient_name }}
+              </p>
             </td>
             <td class="py-5 px-4">
               <p class="text-black dark:text-white">
-                {{ formatCurrency(order.totalPrice) }}
+                {{ formatDate(order.created_at) }}
+              </p>
+            </td>
+            <td class="py-5 px-4">
+              <p class="text-black dark:text-white">
+                {{ formatCurrency(order.total_amount) }}
               </p>
             </td>
             <td class="py-5 px-4">
               <select
-                v-model="order.orderStatus"
-                @change="handleStatusChange(order)"
-                class="rounded-md border-stroke bg-transparent py-1.5 px-3 outline-none transition-all dark:border-strokedark"
+                :value="order.status"
+                @change="handleStatusChange(order, $event.target.value)"
+                class="mt-1 text-sm rounded-md dark:border-strokedark dark:bg-boxdark border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               >
+                <option value="" disabled>Select a status</option>
                 <option
                   v-for="status in orderStatuses"
                   :key="status.value"
                   :value="status.value"
-                  :selected="order.orderStatus === status.value"
                 >
                   {{ status.label }}
                 </option>

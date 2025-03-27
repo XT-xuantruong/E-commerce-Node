@@ -10,9 +10,9 @@
                         class="w-full hover:bg-gray-300 p-2 flex items-center space-x-3 rounded-lg">
                         <RouterLink :to="{
                             name: 'category',
-                            params: { categorySlug: category.slug },
+                            params: { categorySlug: category.category_id },
                         }" class="text-black w-full block  items-center">
-                            <span>{{ category.title }} ({{ getTotalItems(category._id) }})</span>
+                            <span>{{ category.name }} ({{ getTotalItems(category.category_id) }})</span>
                         </RouterLink>
                     </li>
                 </ul>
@@ -66,6 +66,7 @@ const fetchProduct = async () => {
     await productServices.gets()
         .then(response => {
             products.value = response.data.data
+            
         })
         .catch(error => {
             console.error(error)
@@ -79,8 +80,8 @@ onBeforeMount(() => {
 const loadMoreCategories = () => {
     displayedCount.value += 10;
 };
-const getTotalItems = (categoryId) => {
-    return products.value.filter((p) => p.category === categoryId).length;
+const getTotalItems = (category_id) => {
+    return products.value.filter((p) => p.category_id === category_id).length;
 };
 </script>
 

@@ -1,23 +1,35 @@
 <script setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, watch } from "vue";
 import DefaultLayout from "@/layouts/admin/DefaultLayout.vue";
 import TableOrder from "@/components/admin/Tables/TableOrder.vue";
 import orderServices from "@/services/orderServices";
-import oauthServices from "@/services/oauthServices";
 import { useAdminStore } from "@/stores/admin";
+import userServices from "@/services/userServices";
 
 const orders = ref([]);
+const selectedOrder = ref({});
+const selectedStatus = ref("");
 
 const orderStatuses = ref([
-  { value: "Pending", label: "Pending" },
-  { value: "Paid", label: "Paid" },
-  { value: "Cancelled", label: "Cancelled" },
+  { value: "pending", label: "Pending" },
+  { value: "shipped", label: "Shipped" },
+  { value: "canceled", label: "Canceled" },
 ]);
 
-const selectedOrder = ref(null);
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const orderToDelete = ref(null);
+
+// Đồng bộ selectedStatus khi selectedOrder thay đổi (dùng cho modal)
+watch(
+  selectedOrder,
+  (newOrder) => {
+    console.log("SelectedOrder changed:", newOrder);
+    selectedStatus.value = newOrder?.status || "";
+    console.log("Updated selectedStatus:", selectedStatus.value);
+  },
+  { deep: true }
+);
 
 // Methods
 const formatCurrency = (amount) => {
@@ -27,6 +39,15 @@ const formatCurrency = (amount) => {
   }).format(amount);
 };
 
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
 const handleViewDetails = (order) => {
   selectedOrder.value = { ...order };
   showModal.value = true;
@@ -34,7 +55,7 @@ const handleViewDetails = (order) => {
 
 const closeModal = () => {
   showModal.value = false;
-  selectedOrder.value = null;
+  selectedOrder.value = {};
 };
 
 const handleDeleteClick = (order) => {
@@ -44,17 +65,11 @@ const handleDeleteClick = (order) => {
 
 const deleteOrder = async () => {
   try {
-    await orderServices.delete(orderToDelete.value._id);
-
-    // Update UI
+    await orderServices.delete(orderToDelete.value.order_id);
     orders.value = orders.value.filter(
-      (order) => order._id !== orderToDelete.value._id
+      (order) => order.order_id !== orderToDelete.value.order_id
     );
-
-    // Close modal
     cancelDelete();
-
-    // Show success message
     alert("Order deleted successfully");
   } catch (error) {
     console.error("Error deleting order:", error);
@@ -66,30 +81,29 @@ const cancelDelete = () => {
   showDeleteModal.value = false;
   orderToDelete.value = null;
 };
-console.log(orders.value);
 
 const updateOrderStatus = async (order) => {
+  console.log("Updating Order ID:", order.order_id);
+  console.log("New Status:", order.status); // Sử dụng order.status từ TableOrder
+
+  if (!order.status) {
+    alert("Please select a valid status before updating.");
+    return;
+  }
+
   try {
-    console.log(orders.value, order._id);
+    await orderServices.cancel(order.order_id, order.status); // Gửi status từ order
 
-    await orderServices.update({
-      orderStatus: order.orderStatus,
-      id: order._id,
-    });
-
-    // Update UI
-    const index = orders.value.findIndex((o) => {
-      console.log("l");
-      o._id === order._id;
-    });
+    // Cập nhật danh sách đơn hàng
+    const index = orders.value.findIndex((o) => o.order_id === order.order_id);
     if (index !== -1) {
-      orders.value[index] = { ...order };
+      orders.value[index] = { ...order }; // Cập nhật toàn bộ order
     }
 
     alert("Status updated successfully");
   } catch (error) {
     console.error("Error updating status:", error);
-    alert("Error occurred while updating status");
+    alert("Failed to update status. Please try again.");
   }
 };
 
@@ -97,21 +111,14 @@ onBeforeMount(async () => {
   const access = useAdminStore().admin.access;
   const response = await orderServices.gets();
   const orderList = response.data.data;
+  console.log(orderList);
+
   for (const element of orderList) {
-    const userResponse = await oauthServices.getme(access, element.user);
+    const userResponse = await userServices.getme(access);
     element.name = userResponse.data.data.name;
   }
   orders.value = orderList;
 });
-
-const formatDate = (date) => {
-  if (!date) return "";
-  return new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
 </script>
 
 <template>
@@ -143,25 +150,24 @@ const formatDate = (date) => {
               @click="closeModal"
               class="text-gray-400 hover:text-gray-500"
             >
-              <span class="text-2xl">&times;</span>
+              <span class="text-2xl">×</span>
             </button>
           </div>
 
           <div v-if="selectedOrder">
-            <!-- Order Information -->
             <div class="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <p class="font-semibold">Customer:</p>
-                <p>{{ selectedOrder.name }}</p>
+                <p>{{ selectedOrder.recipient_name }}</p>
               </div>
               <div>
                 <p class="font-semibold">Order Date:</p>
-                <p>{{ formatDate(selectedOrder.createdAt) }}</p>
+                <p>{{ formatDate(selectedOrder.created_at) }}</p>
               </div>
               <div>
                 <p class="font-semibold">Status:</p>
                 <select
-                  v-model="selectedOrder.orderStatus"
+                  v-model="selectedStatus"
                   @change="updateOrderStatus(selectedOrder)"
                   class="mt-1 text-sm rounded-md dark:border-strokedark dark:bg-boxdark border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 >
@@ -169,7 +175,6 @@ const formatDate = (date) => {
                     v-for="status in orderStatuses"
                     :key="status.value"
                     :value="status.value"
-                    :selected="selectedOrder.orderStatus === status.value"
                   >
                     {{ status.label }}
                   </option>
@@ -177,15 +182,7 @@ const formatDate = (date) => {
               </div>
               <div>
                 <p class="font-semibold">Total Amount:</p>
-                <p>{{ formatCurrency(selectedOrder.totalPrice) }}</p>
-              </div>
-              <div>
-                <p class="font-semibold">Shipping price:</p>
-                <p>{{ formatCurrency(selectedOrder.shippingPrice) }}</p>
-              </div>
-              <div>
-                <p class="font-semibold">Tax price:</p>
-                <p>{{ formatCurrency(selectedOrder.taxPrice) }}</p>
+                <p>{{ formatCurrency(selectedOrder.total_amount) }}</p>
               </div>
             </div>
 
@@ -207,7 +204,7 @@ const formatDate = (date) => {
                     <th
                       class="px-6 py-3 text-left text-xs font-medium dark:text-white text-gray-500 uppercase tracking-wider"
                     >
-                      Quantity
+                      Stock
                     </th>
                     <th
                       class="px-6 py-3 text-left text-xs font-medium dark:text-white text-gray-500 uppercase tracking-wider"
@@ -224,16 +221,20 @@ const formatDate = (date) => {
                 <tbody
                   class="bg-white dark:text-white divide-y dark:border-strokedark dark:bg-boxdark divide-gray-200"
                 >
-                  <tr v-for="item in selectedOrder.orderItems" :key="item.id">
-                    <td class="px-6 py-4 whitespace-nowrap">{{ item.name }}</td>
+                  <tr v-for="item in selectedOrder.items" :key="item.id">
                     <td class="px-6 py-4 whitespace-nowrap">
-                      {{ item.amount }}
+                      {{ item.product.name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      {{ item.product.stock }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       {{ formatCurrency(item.price) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      {{ formatCurrency(item.price * item.amount) }}
+                      {{
+                        formatCurrency(item.product.price * item.product.stock)
+                      }}
                     </td>
                   </tr>
                 </tbody>
@@ -257,7 +258,7 @@ const formatDate = (date) => {
             </h3>
             <div class="mt-2 px-7 py-3">
               <p class="text-sm text-gray-500">
-                Are you sure you want to delete order ?
+                Are you sure you want to delete order?
               </p>
             </div>
             <div class="items-center px-4 py-3">

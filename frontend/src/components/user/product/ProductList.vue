@@ -54,6 +54,10 @@ const props = defineProps({
         required: true,
     },
 });
+console.log("show products");
+
+console.log(props.products);
+
 
 // Sorting and filter logic
 const sortedProducts = computed(() => {
@@ -73,6 +77,8 @@ const sortedProducts = computed(() => {
 
         return inPriceRange && meetsStarRating;
     });
+    console.log('fill');
+    
     console.log(filteredProducts);
 
     // Step 2: Sort the filtered products

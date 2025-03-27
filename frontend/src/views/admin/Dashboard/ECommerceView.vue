@@ -8,6 +8,7 @@ import orderServices from "@/services/orderServices";
 import { useAdminStore } from "@/stores/admin";
 
 import { useRouter } from "vue-router";
+import userServices from "@/services/userServices";
 const router = useRouter();
 const adminStore = useAdminStore();
 if (!adminStore.admin.isAuthenticated) {
@@ -17,9 +18,9 @@ if (!adminStore.admin.isAuthenticated) {
 const orders = ref([]);
 
 const orderStatuses = ref([
-  { value: "Pending", label: "Pending" },
-  { value: "Paid", label: "Paid" },
-  { value: "Cancelled", label: "Cancelled" },
+  { value: "pending", label: "Pending" },
+  { value: "shipped", label: "Shipped" },
+  { value: "canceled", label: "Canceled" },
 ]);
 
 const formatCurrency = (amount) => {
@@ -42,8 +43,10 @@ onBeforeMount(async () => {
   const access = useAdminStore().admin.access;
   const response = await orderServices.gets();
   const orderList = response.data.data;
+  console.log(orderList);
+  
   for (const element of orderList) {
-    const userResponse = await oauthServices.getme(access, element.user);
+    const userResponse = await userServices.getme(access);
     element.name = userResponse.data.data.name;
   }
   orders.value = orderList;
@@ -93,24 +96,24 @@ onBeforeMount(async () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="order in orders" :key="order.id">
+              <tr v-for="order in orders" :key="order.order_id">
                 <td class="py-5 px-4">
-                  <p class="text-black dark:text-white">{{ order.name }}</p>
+                  <p class="text-black dark:text-white">{{ order.recipient_name }}</p>
                 </td>
                 <td class="py-5 px-4">
                   <p class="text-black dark:text-white">
-                    {{ formatDate(order.createdAt) }}
+                    {{ formatDate(order.created_at) }}
                   </p>
                 </td>
                 <td class="py-5 px-4">
                   <p class="text-black dark:text-white">
-                    {{ formatCurrency(order.totalPrice) }}
+                    {{ formatCurrency(order.total_amount) }}
                   </p>
                 </td>
                 <td class="py-5 px-4">
                   <select
                   disabled
-                    v-model="order.orderStatus"
+                    :value="order.status"
                     @change="handleStatusChange(order)"
                     class="rounded-md border-stroke bg-transparent py-1.5 px-3 outline-none transition-all dark:border-strokedark"
                   >
@@ -118,7 +121,7 @@ onBeforeMount(async () => {
                       v-for="status in orderStatuses"
                       :key="status.value"
                       :value="status.value"
-                      :selected="order.orderStatus === status.value"
+                      :selected="order.status === status.value"
                     >
                       {{ status.label }}
                     </option>

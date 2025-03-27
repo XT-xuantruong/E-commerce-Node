@@ -15,13 +15,13 @@ const createUser = async (req, res) => {
     // } else if (contentType.includes("application/x-www-form-urlencoded")) {
     //   userData = req.body;
     // }
-    const { name, email, password, confirmPassword, phone } = userData;
+    const { name, email, password, password2, phone } = userData;
     console.log(email);
 
     const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
     const isCheckEmail = reg.test(email);
 
-    if (!name || !email || !password || !confirmPassword || !phone) {
+    if (!name || !email || !password || !password2 || !phone) {
       return res.status(200).json({
         status: "ERR",
         message: "The input is required",
@@ -31,7 +31,7 @@ const createUser = async (req, res) => {
         status: "ERR",
         message: "The input is email",
       });
-    } else if (password !== confirmPassword) {
+    } else if (password !== password2) {
       return res.status(200).json({
         status: "ERR",
         message: "The password is equal confirmPassword ",
@@ -55,6 +55,8 @@ const loginUser = async (req, res) => {
     if (contentType.includes("application/json")) {
       userData = req.body;
     }
+    console.log(userData);
+    
 
     const { email, password } = userData;
 

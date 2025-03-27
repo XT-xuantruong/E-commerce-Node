@@ -4,15 +4,13 @@ import { useAdminStore } from "@/stores/admin";
 import { useUserStore } from "@/stores/user";
 import { data } from "autoprefixer";
 
-class OrderServices extends ApiService {
+class PaymentServices extends ApiService {
   get entity() {
-    return "orders";
+    return "payments";
   }
 
   async create(data) {
     const adminStore = useAdminStore();
-    console.log("hay");
-
     console.log();
     return this.request({
       method: "post",
@@ -26,12 +24,11 @@ class OrderServices extends ApiService {
 
   async gets() {
     const adminStore = useAdminStore();
-    console.log("long");
     console.log(adminStore.admin.access);
 
     return this.request({
       method: "get",
-      url: `/${this.entity}/`,
+      url: `/${this.entity}`,
       headers: {
         Authorization: `Bearer ${adminStore.admin.access}`,
       },
@@ -42,9 +39,32 @@ class OrderServices extends ApiService {
 
     return this.request({
       method: "get",
-      url: `/${this.entity}/${id}`,
+      url: `/${this.entity}/${id}/`,
       headers: {
         Authorization: `Bearer ${user.user.access}`,
+      },
+    });
+  }
+
+  async getByOrder(id) {
+    const user = useUserStore();
+
+    return this.request({
+      method: "get",
+      url: `/${this.entity}/order/${id}`,
+      headers: {
+        Authorization: `Bearer ${user.user.access}`,
+      },
+    });
+  }
+
+  async status(id, status) {
+    const adminStore = useAdminStore();
+    return this.request({
+      method: "put",
+      url: `/${this.entity}/${id}/status?payment_status=${status}`,
+      headers: {
+        Authorization: `Bearer ${adminStore.admin.access}`,
       },
     });
   }
@@ -53,7 +73,7 @@ class OrderServices extends ApiService {
 
     return this.request({
       method: "get",
-      url: `/${this.entity}/get-by-user`,
+      url: `/${this.entity}/get-by-user/${user.user.id}/`,
       data: user.user.id,
       headers: {
         Authorization: `Bearer ${user.user.access}`,
@@ -67,22 +87,11 @@ class OrderServices extends ApiService {
 
     return this.request({
       method: "put",
-      url: `/${this.entity}/${data.order_id}/`,
+      url: `/${this.entity}/${data._id}/`,
       data: data,
-      headers: {
-        Authorization: `Bearer ${adminStore.admin.access}`,
-      },
-    });
-  }
-
-  async cancel(id, status) {
-    const adminStore = useAdminStore();
-    return this.request({
-      method: "put",
-      url: `/${this.entity}/${id}/status?status=${status}`,
-      headers: {
-        Authorization: `Bearer ${adminStore.admin.access}`,
-      },
+      // headers: {
+      //   Authorization: `Bearer ${adminStore.admin.access}`,
+      // },
     });
   }
 
@@ -92,7 +101,7 @@ class OrderServices extends ApiService {
     const adminStore = useAdminStore();
     return this.request({
       method: "delete",
-      url: `/${this.entity}/${id}`,
+      url: `/${this.entity}/${id}/`,
       headers: {
         Authorization: `Bearer ${adminStore.admin.access}`,
       },
@@ -100,4 +109,4 @@ class OrderServices extends ApiService {
   }
 }
 
-export default new OrderServices();
+export default new PaymentServices();

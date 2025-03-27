@@ -69,7 +69,7 @@
       <h2 class="text-2xl font-bold text-gray-900 mb-8">Danh mục sản phẩm</h2>
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-        <CategoryCard v-for="category in categories" :key="category._id" :category="category" />
+        <CategoryCard v-for="category in categories" :key="category.category_id" :category="category" />
       </div>
     </section>
   </DefaultLayout>
@@ -129,6 +129,7 @@ const fetchProduct = async () => {
 const fetchCategory = async () => {
   await categoryServices.gets()
     .then(response => {
+      console.log(response.data.data);
       categories.value = response.data.data
     })
     .catch(error => {

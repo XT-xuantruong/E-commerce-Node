@@ -50,20 +50,20 @@
                       {{ product.code }}
                     </td> -->
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <img :src="product.thumbnail" alt="Product thumbnail" class="w-12 h-12 object-cover rounded" />
+                      <img :src="product.images[0]" alt="Product thumbnail" class="w-12 h-12 object-cover rounded" />
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                       {{ product.name }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      {{ findcategory(product.category) }}
+                      {{ findcategory(product.category_id) }}
                     </td>
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      {{ product.countInStock }}
+                      {{ product.stock }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      {{ formatCurrency(product.countInStock * product.price) }}
+                      {{ formatCurrency(product.stock * product.price) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap flex items-center justify-center">
                       <button @click="removeProduct(index)" class="text-red-600 hover:text-red-900">
@@ -132,6 +132,7 @@ const notification = reactive({
   type: "success",
 });
 
+
 // Methods
 const handleAddProduct = (newProduct) => {
   products.value.push(newProduct);
@@ -192,6 +193,9 @@ const fetchCategory = async () => {
     .gets()
     .then((response) => {
       categories.value = response.data.data;
+      console.log('long long');
+      
+      console.log(response.data.data);
     })
     .catch((error) => {
       console.error(error);
@@ -202,6 +206,6 @@ onBeforeMount(() => {
 });
 
 const findcategory = (id) => {
-  return categories.value.find((c) => c._id == id).title;
+  return categories.value.find((c) => c.category_id == id).name;
 };
 </script>

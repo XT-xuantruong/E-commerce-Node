@@ -6,9 +6,10 @@ var crypto = require("crypto");
 const { genneralAccessToken, genneralRefreshToken } = require("./jwtService");
 
 const createUser = (newUser) => {
+  console.log(newUser);
   return new Promise(async (resolve, reject) => {
     const { name, email, password, phone, isAdmin } = newUser;
-
+    
     try {
       const checkUser = await User.findOne({ email: email });
       if (checkUser !== null) {

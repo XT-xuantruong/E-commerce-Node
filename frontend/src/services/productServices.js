@@ -3,33 +3,39 @@ import { useAdminStore } from "@/stores/admin";
 
 class ProductServices extends ApiService {
   get entity() {
-    return "product";
+    return "products";
   }
   async update(data) {
     const adminStore = useAdminStore();
-
-    const { _id } = data;
-    const formData = new FormData();
-
-    formData.append("name", data.name);
-    formData.append("thumbnail", data.thumbnail);
-    formData.append("price", data.price);
-    formData.append("description", data.description);
-    formData.append("category", data.category);
-    formData.append("countInStock", data.countInStock);
+  
+    const { product_id } = data;
+  
+    // Chuẩn bị dữ liệu JSON theo schema ProductCreate
+    const productData = {
+      name: data.name,
+      price: data.price,
+      description: data.description,
+      category_id: data.category_id,
+      stock: data.stock,
+      images: [],
+    };
+  
+    // Xử lý danh sách images
     if (data.images && data.images.length > 0) {
       data.images.forEach((image, i) => {
-        if (!image.id) {
-          formData.append("images", image);
-        }
+        productData.images.push({
+          image_url: image, // Giả sử image là chuỗi URL hoặc base64
+          is_primary: i === 0, // Gán ảnh đầu tiên là primary, bạn có thể thay đổi logic này
+        });
       });
     }
+  
     const option = {
       method: "put",
-      url: `/${this.entity}/${_id}/`,
-      data: formData,
+      url: `/${this.entity}/${product_id}`,
+      data: productData,
       headers: {
-        "Content-Type": "application/multipart/form-data",
+        "Content-Type": "application/json", // Đổi thành JSON
         Authorization: `Bearer ${adminStore.admin.access}`,
       },
     };
@@ -38,29 +44,47 @@ class ProductServices extends ApiService {
 
   async create(data) {
     const adminStore = useAdminStore();
-    const formData = new FormData();
 
-    formData.append("name", data.name);
-    formData.append("thumbnail", data.thumbnail);
-    formData.append("price", data.price);
-    formData.append("description", data.description);
-    formData.append("category", data.category);
-    formData.append("countInStock", data.countInStock);
+    // Chuẩn bị dữ liệu JSON theo schema ProductCreate
+    const productData = {
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        category_id: data.category_id,
+        stock: data.stock,
+        images: [],
+    };
+
+    // Xử lý danh sách images
     if (data.images && data.images.length > 0) {
-      data.images.forEach((image, i) => {
-        if (!image.id) {
-          formData.append("images", image);
-        }
-      });
+        data.images.forEach((image, i) => {
+            productData.images.push({
+                image_url: image, // Giả sử image là chuỗi URL hoặc Base64
+                is_primary: i === 0, // Gán ảnh đầu tiên là primary
+            });
+        });
     }
+
     const option = {
-      method: "post",
+        method: "post",
+        url: `/${this.entity}/`, // Ví dụ: "/api/products/"
+        data: productData,
+        headers: {
+            "Content-Type": "application/json", // Gửi dưới dạng JSON
+            Authorization: `Bearer ${adminStore.admin.access}`,
+        },
+    };
+
+    return this.request(option);
+}
+
+  async gets() {
+    const adminStore = useAdminStore();
+
+    let option = {
+      method: "get",
       url: `/${this.entity}/`,
-      data: formData,
-      headers: {
-        "Content-Type": "application/multipart/form-data",
-        Authorization: `Bearer ${adminStore.admin.access}`,
-      },
+      Authorization: `Bearer ${adminStore.admin.access}`,
     };
     return this.request(option);
   }
@@ -69,7 +93,7 @@ class ProductServices extends ApiService {
     const adminStore = useAdminStore();
     return this.request({
       method: "delete",
-      url: `/${this.entity}/${id}/`,
+      url: `/${this.entity}/${id}`,
       headers: {
         Authorization: `Bearer ${adminStore.admin.access}`,
       },
