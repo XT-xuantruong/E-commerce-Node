@@ -19,15 +19,16 @@ const schema = yup.object({
   last_name: yup
     .string()
     .required("Last name is required")
-    .min(2, "Name must be at least 2 characters long"),
+    .min(2, "Last name must be at least 2 characters long"),
   first_name: yup
     .string()
     .required("First name is required")
-    .min(2, "Name must be at least 2 characters long"),
+    .min(2, "First name must be at least 2 characters long"),
   phone: yup
     .string()
-    .required("Phone name is required")
-    .min(10, "Phone must be at least 10 number"),
+    .required("Phone number is required")
+    .min(10, "Phone number must be at least 10 digits")
+    .matches(/^\d+$/, "Phone number must contain only digits"),
   address: yup
     .string()
     .required("Address is required"),
@@ -46,6 +47,10 @@ const schema = yup.object({
     .string()
     .required("Please confirm your password")
     .oneOf([yup.ref("password")], "Passwords do not match"),
+  acceptTerms: yup
+    .boolean()
+    .required("You must accept the terms and conditions")
+    .oneOf([true], "You must accept the terms and conditions"),
 });
 
 // Password strength checker
@@ -80,34 +85,33 @@ const handleFacebookSignup = async () => {
   }
 };
 
+// Form submission handler with length validation
 const onSubmit = async (values) => {
-  try {
-    console.log("Signing up with:", values);
-    values.full_name = values.first_name + " " + values.last_name;
-    values.password = values.confirmPassword;
-    oauthServices
-      .signup(values)
-      .then((response) => {
-        if (response.status === 200) {
-          toastStore.showToast(5000, "Sign up successfully", "bg-emerald-500");
-        } else {
-          const data = JSON.parse(response.data.message);
-          for (const key in data) {
-            errors.value.push(data[key][0].message);
-          }
+  // Check password and confirm password length
+  if (values.password.length > 20 || values.confirmPassword.length > 20) {
+    formError.value = "Password and confirm password must not exceed 20 characters.";
+    toastStore.showToast(5000, formError.value, "bg-red-300");
+    return; // Prevent API call if length exceeds 20 characters
+  }
 
-          toastStore.showToast(
-            5000,
-            "Something went wrong. Please try again",
-            "bg-red-300"
-          );
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-      });
+  try {
+    const signupData = {
+      ...values,
+      full_name: `${values.first_name} ${values.last_name}`,
+    };
+    delete signupData.confirmPassword; // Remove confirmPassword as it's not needed in the API call
+
+    const response = await oauthServices.signup(signupData);
+    if (response.status === 200) {
+      toastStore.showToast(5000, "Sign up successfully", "bg-emerald-500");
+      router.push("/"); // Redirect to home page on success
+    } else {
+      formError.value = "Something went wrong. Please try again.";
+      toastStore.showToast(5000, formError.value, "bg-red-300");
+    }
   } catch (error) {
-    formError.value = "Registration failed. Please try again.";
+    formError.value = error.response?.data?.message || "Registration failed. Please try again.";
+    toastStore.showToast(5000, formError.value, "bg-red-300");
     console.error("Signup error:", error);
   }
 };
@@ -115,9 +119,7 @@ const onSubmit = async (values) => {
 
 <template>
   <DefaultLayout>
-    <div
-      class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-auto my-10 border"
-    >
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-auto my-10 border">
       <h2 class="text-2xl font-bold mb-6 text-center">Sign Up</h2>
 
       <!-- Form Error Alert -->
@@ -126,38 +128,35 @@ const onSubmit = async (values) => {
       </div>
 
       <Form @submit="onSubmit" :validation-schema="schema" v-slot="{ meta }">
+        <!-- First Name -->
         <div class="mb-4">
-          <label for="first_name" class="block text-gray-700 font-bold mb-2"
-            >First Name</label
-          >
+          <label for="first_name" class="block text-gray-700 font-bold mb-2">First Name</label>
           <Field
             name="first_name"
             type="text"
             id="first_name"
             class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your full name"
+            placeholder="Enter your first name"
           />
           <ErrorMessage name="first_name" class="text-red-500 text-sm mt-1" />
         </div>
 
+        <!-- Last Name -->
         <div class="mb-4">
-          <label for="last_name" class="block text-gray-700 font-bold mb-2"
-            >Last Name</label
-          >
+          <label for="last_name" class="block text-gray-700 font-bold mb-2">Last Name</label>
           <Field
             name="last_name"
             type="text"
             id="last_name"
             class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your full name"
+            placeholder="Enter your last name"
           />
           <ErrorMessage name="last_name" class="text-red-500 text-sm mt-1" />
         </div>
+
         <!-- Email -->
         <div class="mb-4">
-          <label for="email" class="block text-gray-700 font-bold mb-2"
-            >Email</label
-          >
+          <label for="email" class="block text-gray-700 font-bold mb-2">Email</label>
           <Field
             name="email"
             type="email"
@@ -167,39 +166,36 @@ const onSubmit = async (values) => {
           />
           <ErrorMessage name="email" class="text-red-500 text-sm mt-1" />
         </div>
-        <!-- phone -->
+
+        <!-- Phone -->
         <div class="mb-4">
-          <label for="phone" class="block text-gray-700 font-bold mb-2"
-            >Phone</label
-          >
+          <label for="phone" class="block text-gray-700 font-bold mb-2">Phone</label>
           <Field
             name="phone"
-            type="name"
+            type="tel"
             id="phone"
             class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter your phone"
+            placeholder="Enter your phone number"
           />
           <ErrorMessage name="phone" class="text-red-500 text-sm mt-1" />
         </div>
-        <!--address-->
+
+        <!-- Address -->
         <div class="mb-4">
-          <label for="address" class="block text-gray-700 font-bold mb-2"
-            >Address</label
-          >
+          <label for="address" class="block text-gray-700 font-bold mb-2">Address</label>
           <Field
             name="address"
-            type="name"
+            type="text"
             id="address"
             class="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Enter your address"
           />
           <ErrorMessage name="address" class="text-red-500 text-sm mt-1" />
         </div>
+
         <!-- Password -->
         <div class="mb-4">
-          <label for="password" class="block text-gray-700 font-bold mb-2"
-            >Password</label
-          >
+          <label for="password" class="block text-gray-700 font-bold mb-2">Password</label>
           <div class="relative">
             <Field v-slot="{ field, meta }" name="password">
               <div class="relative">
@@ -214,75 +210,33 @@ const onSubmit = async (values) => {
                 <div v-if="meta.touched && field.value" class="mt-2 space-y-1">
                   <div class="flex items-center gap-2">
                     <font-awesome-icon
-                      :icon="[
-                        'fas',
-                        getPasswordStrength(field.value).isLongEnough
-                          ? 'check'
-                          : 'times',
-                      ]"
+                      :icon="['fas', getPasswordStrength(field.value).isLongEnough ? 'check' : 'times']"
                       class="w-4"
-                      :class="
-                        getPasswordStrength(field.value).isLongEnough
-                          ? 'text-green-500'
-                          : 'text-gray-400'
-                      "
+                      :class="getPasswordStrength(field.value).isLongEnough ? 'text-green-500' : 'text-gray-400'"
                     />
-                    <span class="text-sm text-gray-600"
-                      >At least 6 characters</span
-                    >
+                    <span class="text-sm text-gray-600">At least 6 characters</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <font-awesome-icon
-                      :icon="[
-                        'fas',
-                        getPasswordStrength(field.value).hasUpperCase
-                          ? 'check'
-                          : 'times',
-                      ]"
+                      :icon="['fas', getPasswordStrength(field.value).hasUpperCase ? 'check' : 'times']"
                       class="w-4"
-                      :class="
-                        getPasswordStrength(field.value).hasUpperCase
-                          ? 'text-green-500'
-                          : 'text-gray-400'
-                      "
+                      :class="getPasswordStrength(field.value).hasUpperCase ? 'text-green-500' : 'text-gray-400'"
                     />
-                    <span class="text-sm text-gray-600"
-                      >One uppercase letter</span
-                    >
+                    <span class="text-sm text-gray-600">One uppercase letter</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <font-awesome-icon
-                      :icon="[
-                        'fas',
-                        getPasswordStrength(field.value).hasLowerCase
-                          ? 'check'
-                          : 'times',
-                      ]"
+                      :icon="['fas', getPasswordStrength(field.value).hasLowerCase ? 'check' : 'times']"
                       class="w-4"
-                      :class="
-                        getPasswordStrength(field.value).hasLowerCase
-                          ? 'text-green-500'
-                          : 'text-gray-400'
-                      "
+                      :class="getPasswordStrength(field.value).hasLowerCase ? 'text-green-500' : 'text-gray-400'"
                     />
-                    <span class="text-sm text-gray-600"
-                      >One lowercase letter</span
-                    >
+                    <span class="text-sm text-gray-600">One lowercase letter</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <font-awesome-icon
-                      :icon="[
-                        'fas',
-                        getPasswordStrength(field.value).hasNumber
-                          ? 'check'
-                          : 'times',
-                      ]"
+                      :icon="['fas', getPasswordStrength(field.value).hasNumber ? 'check' : 'times']"
                       class="w-4"
-                      :class="
-                        getPasswordStrength(field.value).hasNumber
-                          ? 'text-green-500'
-                          : 'text-gray-400'
-                      "
+                      :class="getPasswordStrength(field.value).hasNumber ? 'text-green-500' : 'text-gray-400'"
                     />
                     <span class="text-sm text-gray-600">One number</span>
                   </div>
@@ -300,15 +254,12 @@ const onSubmit = async (values) => {
               />
             </button>
           </div>
+          <ErrorMessage name="password" class="text-red-500 text-sm mt-1" />
         </div>
 
         <!-- Confirm Password -->
         <div class="mb-6">
-          <label
-            for="confirmPassword"
-            class="block text-gray-700 font-bold mb-2"
-            >Confirm Password</label
-          >
+          <label for="confirmPassword" class="block text-gray-700 font-bold mb-2">Confirm Password</label>
           <div class="relative">
             <Field
               name="confirmPassword"
@@ -328,10 +279,7 @@ const onSubmit = async (values) => {
               />
             </button>
           </div>
-          <ErrorMessage
-            name="confirmPassword"
-            class="text-red-500 text-sm mt-1"
-          />
+          <ErrorMessage name="confirmPassword" class="text-red-500 text-sm mt-1" />
         </div>
 
         <!-- Terms and Conditions -->
@@ -347,13 +295,9 @@ const onSubmit = async (values) => {
             />
             <span class="ml-2 text-sm text-gray-600">
               I agree to the
-              <a href="/terms" class="text-blue-500 hover:underline"
-                >Terms and Conditions</a
-              >
+              <a href="/terms" class="text-blue-500 hover:underline">Terms and Conditions</a>
               and
-              <a href="/privacy" class="text-blue-500 hover:underline"
-                >Privacy Policy</a
-              >
+              <a href="/privacy" class="text-blue-500 hover:underline">Privacy Policy</a>
             </span>
           </label>
           <ErrorMessage name="acceptTerms" class="text-red-500 text-sm mt-1" />
@@ -362,8 +306,8 @@ const onSubmit = async (values) => {
         <!-- Signup Button -->
         <button
           type="submit"
-          :disabled="!meta.valid"
           id="register_button"
+          :disabled="!meta.valid"
           class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 font-bold transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Sign Up

@@ -49,8 +49,6 @@ const validatePassword = () => {
   return true;
 };
 
-
-
 // Form submission handler
 const handleSubmit = async (event) => {
   event.preventDefault();
@@ -90,8 +88,6 @@ const handleSubmit = async (event) => {
   <DefaultLayout>
     <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-auto my-10 border">
       <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
-
-
 
       <div class="relative flex items-center justify-center mb-6">
         <hr class="w-full border-gray-300" />
@@ -138,7 +134,7 @@ const handleSubmit = async (event) => {
         </div>
 
         <!-- Login Button -->
-        <button type="submit"
+        <button type="submit" id="login_button"
           class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 font-bold transition duration-200">
           Login
         </button>
